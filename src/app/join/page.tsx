@@ -33,7 +33,7 @@ export default function JoinPage() {
     setIsLoading(true);
     setMessage(null);
 
-    const supabase = createClient();
+    const supabase = createBrowserSupabaseClient();
 
     // First, sign up/sign in the user
     const { error: authError } = await supabase.auth.signInWithOtp({
