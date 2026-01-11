@@ -125,6 +125,40 @@ const tools = [
     external: false,
   },
   {
+    name: 'EA Impact Report Generator',
+    description:
+      'Generate executive-ready reports that quantify EA impact and outcomes across any reporting period.',
+    features: [
+      'Monthly, quarterly, annual, or custom period reports',
+      'Auto-calculate metrics: hours saved, cost avoided, initiatives delivered',
+      'Import from Accomplishments Tracker or CSV',
+      'Confidentiality controls for sensitive items',
+      'Executive-ready and internal EA report outputs',
+    ],
+    href: '/tools/ea-impact-report',
+    badge: 'Members',
+    icon: '📊',
+    cta: 'Open Impact Report Generator',
+    external: false,
+  },
+  {
+    name: 'Event Checklist Builder',
+    description:
+      'Build event checklists with timelines, owners, and share-ready outputs for any type of event.',
+    features: [
+      'Built-in templates for board meetings, offsites, conferences',
+      'Organize tasks by phases with owners and due dates',
+      'Timeline view with overdue alerts',
+      'Generate vendor, exec, and internal summaries',
+      'Save and reuse event templates',
+    ],
+    href: '/tools/event-checklist-builder',
+    badge: 'Members',
+    icon: '✅',
+    cta: 'Open Event Checklist Builder',
+    external: false,
+  },
+  {
     name: 'EAwiz GPT',
     description:
       'Your AI-powered assistant specifically trained for Executive Assistant tasks. Draft emails, create agendas, plan travel, and more.',
