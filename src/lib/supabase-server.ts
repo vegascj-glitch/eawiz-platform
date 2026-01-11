@@ -46,7 +46,28 @@ export async function getProfile(): Promise<Profile | null> {
   return profile;
 }
 
+function isInternalMember(email: string | undefined): boolean {
+  if (!email) return false;
+  const internalEmails = process.env.INTERNAL_MEMBER_EMAILS || '';
+  if (!internalEmails) return false;
+
+  const allowedEmails = internalEmails
+    .split(',')
+    .map(e => e.trim().toLowerCase())
+    .filter(Boolean);
+
+  return allowedEmails.includes(email.toLowerCase().trim());
+}
+
 export async function isActiveMember(): Promise<boolean> {
+  const supabase = await createServerSupabaseClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // Check internal member bypass first
+  if (user?.email && isInternalMember(user.email)) {
+    return true;
+  }
+
   const profile = await getProfile();
   if (!profile) {
     return false;
