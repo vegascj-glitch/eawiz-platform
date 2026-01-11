@@ -40,6 +40,23 @@ const tools = [
     external: false,
   },
   {
+    name: 'Executive Attention Audit',
+    description:
+      'Analyze how your executive\'s time and attention are allocated across categories and identify strategic misalignment.',
+    features: [
+      'Structured entry and paste import modes',
+      'Category breakdown (Strategy, Operations, People, etc.)',
+      'Automatic insights and recommendations',
+      'Save named audits for comparison',
+      'Executive and EA-only export formats',
+    ],
+    href: '/tools/executive-attention-audit',
+    badge: 'Members',
+    icon: '🎯',
+    cta: 'Open Attention Audit',
+    external: false,
+  },
+  {
     name: 'EAwiz GPT',
     description:
       'Your AI-powered assistant specifically trained for Executive Assistant tasks. Draft emails, create agendas, plan travel, and more.',
