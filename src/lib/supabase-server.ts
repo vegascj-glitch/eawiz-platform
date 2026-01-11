@@ -60,6 +60,10 @@ function isInternalMember(email: string | undefined): boolean {
 }
 
 export async function isActiveMember(): Promise<boolean> {
+  // TODO: DEMO MODE - Remove this line to re-enable subscription gating
+  return true;
+
+  /* Original subscription check - uncomment when ready:
   const supabase = await createServerSupabaseClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -73,4 +77,5 @@ export async function isActiveMember(): Promise<boolean> {
     return false;
   }
   return profile.subscription_status === 'active';
+  */
 }

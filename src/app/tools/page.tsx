@@ -91,6 +91,23 @@ const tools = [
     external: false,
   },
   {
+    name: 'Accomplishments Tracker',
+    description:
+      'Log EA impact throughout the year and generate review-ready bullets and narrative summaries.',
+    features: [
+      'Track accomplishments with metrics and STAR format',
+      'Generate review-ready bullets in 3 styles',
+      'Narrative summaries and brag doc export',
+      'Confidentiality controls and saved templates',
+      'Filter by category, impact type, and date range',
+    ],
+    href: '/tools/accomplishments-tracker',
+    badge: 'Members',
+    icon: '🏆',
+    cta: 'Open Accomplishments Tracker',
+    external: false,
+  },
+  {
     name: 'EAwiz GPT',
     description:
       'Your AI-powered assistant specifically trained for Executive Assistant tasks. Draft emails, create agendas, plan travel, and more.',
