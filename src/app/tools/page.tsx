@@ -6,6 +6,23 @@ import { EXTERNAL_LINKS } from '@/lib/utils';
 
 const tools = [
   {
+    name: 'Availability Grid',
+    description:
+      'Select meeting times across time zones and generate a ready-to-send email with professional formatting.',
+    features: [
+      'Visual weekly calendar grid (7am-7pm)',
+      'Multi-timezone conversion with day-shift indicators',
+      'Professional email templates (4 tones)',
+      'ICS calendar export for holds',
+      'Lunch blackout and buffer settings',
+    ],
+    href: '/tools/availability-grid',
+    badge: 'Members',
+    icon: '📅',
+    cta: 'Open Availability Grid',
+    external: false,
+  },
+  {
     name: 'EAwiz GPT',
     description:
       'Your AI-powered assistant specifically trained for Executive Assistant tasks. Draft emails, create agendas, plan travel, and more.',
@@ -147,16 +164,24 @@ export default function ToolsPage() {
                     ))}
                   </ul>
                   <div className="mt-6">
-                    <a
-                      href={tool.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <Button variant="primary" className="w-full">
-                        {tool.cta}
-                        <span className="ml-2">↗</span>
-                      </Button>
-                    </a>
+                    {tool.external ? (
+                      <a
+                        href={tool.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Button variant="primary" className="w-full">
+                          {tool.cta}
+                          <span className="ml-2">↗</span>
+                        </Button>
+                      </a>
+                    ) : (
+                      <Link href={tool.href}>
+                        <Button variant="primary" className="w-full">
+                          {tool.cta}
+                        </Button>
+                      </Link>
+                    )}
                   </div>
                 </CardContent>
               </Card>
