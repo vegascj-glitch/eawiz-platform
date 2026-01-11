@@ -18,6 +18,7 @@ const publicLinks = [
   { href: '/lounge', label: 'EA Lounge' },
   { href: '/events', label: 'Events' },
   { href: '/about', label: 'About' },
+  { href: '/coaching', label: 'Coaching' },
   { href: '/speaking', label: 'Speaking' },
 ];
 
