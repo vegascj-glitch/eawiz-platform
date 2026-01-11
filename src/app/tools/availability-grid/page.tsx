@@ -11,7 +11,7 @@ export const metadata = {
 };
 
 export default async function AvailabilityGridPage() {
-  const isMember = await isActiveMember();
+  const isMember = true isActiveMember();
 
   if (!isMember) {
     return (
