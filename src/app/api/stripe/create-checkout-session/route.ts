@@ -1,9 +1,26 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getProfile, createServerSupabaseClient } from '@/lib/supabase-server';
-import { stripe, PRICE_ID, getOrCreateCustomer } from '@/lib/stripe';
+import { stripe, getPriceId, getOrCreateCustomer, PlanType, PRICE_ID_MONTHLY, PRICE_ID_ANNUAL } from '@/lib/stripe';
 
-export async function POST() {
+export async function POST(request: NextRequest) {
   try {
+    // Parse request body for plan selection
+    const body = await request.json().catch(() => ({}));
+    const plan: PlanType = body.plan === 'annual' ? 'annual' : 'monthly';
+
+    // Validate env vars
+    const priceId = getPriceId(plan);
+    if (!priceId) {
+      const missingVar = plan === 'annual'
+        ? 'NEXT_PUBLIC_STRIPE_PRICE_ID_ANNUAL'
+        : 'NEXT_PUBLIC_STRIPE_PRICE_ID_MONTHLY';
+      console.error(`Missing environment variable: ${missingVar}`);
+      return NextResponse.json(
+        { error: `Server configuration error: ${missingVar} is not set` },
+        { status: 500 }
+      );
+    }
+
     const profile = await getProfile();
 
     if (!profile) {
@@ -25,24 +42,26 @@ export async function POST() {
         .eq('id', profile.id);
     }
 
-    // Create checkout session
+    // Create checkout session with selected plan
     const session = await stripe.checkout.sessions.create({
       customer: customer.id,
       line_items: [
         {
-          price: PRICE_ID,
+          price: priceId,
           quantity: 1,
         },
       ],
       mode: 'subscription',
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/account?success=true`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/join?canceled=true`,
+      success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/account?success=true`,
+      cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/join?canceled=true`,
       metadata: {
         userId: profile.id,
+        plan,
       },
       subscription_data: {
         metadata: {
           userId: profile.id,
+          plan,
         },
       },
     });

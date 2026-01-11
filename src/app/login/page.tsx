@@ -91,7 +91,7 @@ export default function LoginPage() {
               <p className="text-sm text-gray-600">
                 Don&apos;t have an account?{' '}
                 <Link href="/join" className="text-primary-600 hover:text-primary-700 font-medium">
-                  Join for $20/month
+                  Join for $40/month
                 </Link>
               </p>
             </div>

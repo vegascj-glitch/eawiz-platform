@@ -213,7 +213,7 @@ export function PromptLibrary({
           </p>
           <Link href="/join?from=prompts">
             <Button variant="primary" size="lg">
-              Join EAwiz - $20/month
+              Join EAwiz - $40/month
             </Button>
           </Link>
         </div>

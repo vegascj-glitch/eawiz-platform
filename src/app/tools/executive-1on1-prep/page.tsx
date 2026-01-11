@@ -73,7 +73,7 @@ export default async function Executive1on1PrepPage() {
                 </ul>
                 <Link href="/join?from=executive-1on1-prep">
                   <Button variant="primary" size="lg">
-                    Join EAwiz - $20/month
+                    Join EAwiz - $40/month
                   </Button>
                 </Link>
               </CardContent>

@@ -105,7 +105,7 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-gray-100">
                     <span className="text-gray-600">Price</span>
-                    <span className="font-medium">$20/month</span>
+                    <span className="font-medium">$40/month</span>
                   </div>
                   {profile.subscription_ends_at && (
                     <div className="flex justify-between items-center py-2 border-b border-gray-100">
@@ -128,7 +128,7 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
                   </p>
                   <Link href="/join">
                     <Button variant="primary" size="lg">
-                      Upgrade for $20/month
+                      Upgrade for $40/month
                     </Button>
                   </Link>
                 </div>

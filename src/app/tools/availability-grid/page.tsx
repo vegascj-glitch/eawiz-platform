@@ -74,7 +74,7 @@ export default async function AvailabilityGridPage() {
                 </ul>
                 <Link href="/join?from=availability-grid">
                   <Button variant="primary" size="lg">
-                    Join EAwiz - $20/month
+                    Join EAwiz - $40/month
                   </Button>
                 </Link>
               </CardContent>

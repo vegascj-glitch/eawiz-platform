@@ -79,7 +79,7 @@ export default async function EAImpactReportPage() {
                 </ul>
                 <Link href="/join?from=ea-impact-report">
                   <Button variant="primary" size="lg">
-                    Join EAwiz - $20/month
+                    Join EAwiz - $40/month
                   </Button>
                 </Link>
               </CardContent>

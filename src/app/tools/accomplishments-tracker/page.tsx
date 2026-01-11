@@ -73,7 +73,7 @@ export default async function AccomplishmentsTrackerPage() {
                 </ul>
                 <Link href="/join?from=accomplishments-tracker">
                   <Button variant="primary" size="lg">
-                    Join EAwiz - $20/month
+                    Join EAwiz - $40/month
                   </Button>
                 </Link>
               </CardContent>

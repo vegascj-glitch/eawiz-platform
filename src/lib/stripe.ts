@@ -5,32 +5,45 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   typescript: true,
 });
 
-export const PRICE_ID = process.env.STRIPE_PRICE_ID!;
-export const MONTHLY_PRICE = 20;
+export const PRICE_ID_MONTHLY = process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_MONTHLY!;
+export const PRICE_ID_ANNUAL = process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_ANNUAL!;
+export const MONTHLY_PRICE = 40;
+export const ANNUAL_PRICE = 400;
+
+export type PlanType = 'monthly' | 'annual';
+
+export function getPriceId(plan: PlanType): string {
+  return plan === 'annual' ? PRICE_ID_ANNUAL : PRICE_ID_MONTHLY;
+}
 
 export async function createCheckoutSession(
   customerId: string,
   email: string,
-  userId: string
+  userId: string,
+  plan: PlanType = 'monthly'
 ) {
+  const priceId = getPriceId(plan);
+
   const session = await stripe.checkout.sessions.create({
     customer: customerId,
     customer_email: customerId ? undefined : email,
     line_items: [
       {
-        price: PRICE_ID,
+        price: priceId,
         quantity: 1,
       },
     ],
     mode: 'subscription',
-    success_url: `${process.env.NEXT_PUBLIC_APP_URL}/account?success=true`,
-    cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/join?canceled=true`,
+    success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/account?success=true`,
+    cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/join?canceled=true`,
     metadata: {
       userId,
+      plan,
     },
     subscription_data: {
       metadata: {
         userId,
+        plan,
       },
     },
   });

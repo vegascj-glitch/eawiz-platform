@@ -222,7 +222,7 @@ export default function AboutPage() {
           <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/join">
               <Button variant="secondary" size="lg">
-                Join for $20/month
+                Join for $40/month
               </Button>
             </Link>
             <Link href="/tools">

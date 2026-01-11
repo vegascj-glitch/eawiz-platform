@@ -29,12 +29,16 @@ cp .env.example .env.local
 
 Required environment variables:
 - `NEXT_PUBLIC_APP_URL` - Your app URL (http://localhost:3000 for dev)
+- `NEXT_PUBLIC_SITE_URL` - Site URL for Stripe redirects (same as APP_URL)
 - `NEXT_PUBLIC_SUPABASE_URL` - Supabase project URL
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase anon key
 - `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key
-- `STRIPE_SECRET_KEY` - Stripe secret key
+- `STRIPE_SECRET_KEY` - Stripe secret key (server-only)
 - `STRIPE_WEBHOOK_SECRET` - Stripe webhook secret
-- `STRIPE_PRICE_ID` - Stripe price ID for $20/mo subscription
+- `NEXT_PUBLIC_STRIPE_PRICE_ID_MONTHLY` - Stripe price ID for $40/month subscription
+- `NEXT_PUBLIC_STRIPE_PRICE_ID_ANNUAL` - Stripe price ID for $400/year subscription
+- `NEXT_PUBLIC_STRIPE_PRICE_ID_COURTNEY` - Stripe price ID for Courtney's coaching
+- `NEXT_PUBLIC_STRIPE_PRICE_ID_MOLLY` - Stripe price ID for Molly's coaching
 - `RESEND_API_KEY` - Resend API key
 - `FROM_EMAIL` - Sender email address
 - `ADMIN_EMAIL` - Admin notification email
@@ -48,8 +52,8 @@ Run the schema and seed files in your Supabase SQL editor:
 
 ### 4. Stripe Setup
 
-1. Create a product in Stripe with $20/month pricing
-2. Copy the Price ID to `STRIPE_PRICE_ID`
+1. Create a product in Stripe with two prices: $40/month and $400/year
+2. Copy the Price IDs to `NEXT_PUBLIC_STRIPE_PRICE_ID_MONTHLY` and `NEXT_PUBLIC_STRIPE_PRICE_ID_ANNUAL`
 3. Set up a webhook endpoint pointing to `/api/stripe/webhook`
 4. Configure webhook to listen for:
    - `checkout.session.completed`
@@ -73,11 +77,12 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Features
 
-- **Public Pages**: Home, About, Tools, Events, Speaking
+- **Public Pages**: Home, About, Tools, Events, Coaching, Speaking
 - **Auth**: Magic link authentication via Supabase
-- **Membership**: $20/month subscription via Stripe
+- **Membership**: $40/month or $400/year subscription via Stripe
 - **Prompt Library**: 380+ prompts across 19 categories (members only)
 - **The EAwiz Lounge**: Community forum for members
+- **1:1 Coaching**: Private coaching sessions with Stripe checkout
 - **Speaking Form**: Inquiry form with admin notifications
 
 ## Project Structure
@@ -93,6 +98,7 @@ src/
 │   ├── about/             # About page
 │   ├── account/           # User account
 │   ├── auth/              # Auth callback
+│   ├── coaching/          # 1:1 coaching with Stripe checkout
 │   ├── events/            # Events listing
 │   ├── join/              # Checkout flow
 │   ├── login/             # Magic link login

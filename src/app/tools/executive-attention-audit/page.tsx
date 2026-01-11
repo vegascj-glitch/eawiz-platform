@@ -73,7 +73,7 @@ export default async function ExecutiveAttentionAuditPage() {
                 </ul>
                 <Link href="/join?from=executive-attention-audit">
                   <Button variant="primary" size="lg">
-                    Join EAwiz - $20/month
+                    Join EAwiz - $40/month
                   </Button>
                 </Link>
               </CardContent>

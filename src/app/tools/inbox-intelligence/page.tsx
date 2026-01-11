@@ -73,7 +73,7 @@ export default async function InboxIntelligencePage() {
                 </ul>
                 <Link href="/join?from=inbox-intelligence">
                   <Button variant="primary" size="lg">
-                    Join EAwiz - $20/month
+                    Join EAwiz - $40/month
                   </Button>
                 </Link>
               </CardContent>

@@ -73,7 +73,7 @@ export default async function ExecutiveBriefPage() {
                 </ul>
                 <Link href="/join?from=executive-brief">
                   <Button variant="primary" size="lg">
-                    Join EAwiz - $20/month
+                    Join EAwiz - $40/month
                   </Button>
                 </Link>
               </CardContent>

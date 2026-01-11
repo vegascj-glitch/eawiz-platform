@@ -79,7 +79,7 @@ export default async function EventChecklistBuilderPage() {
                 </ul>
                 <Link href="/join?from=event-checklist-builder">
                   <Button variant="primary" size="lg">
-                    Join EAwiz - $20/month
+                    Join EAwiz - $40/month
                   </Button>
                 </Link>
               </CardContent>
