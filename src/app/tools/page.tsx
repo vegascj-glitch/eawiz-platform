@@ -57,6 +57,23 @@ const tools = [
     external: false,
   },
   {
+    name: 'Executive 1:1 Prep Tool',
+    description:
+      'Build structured agendas for executive check-ins with updates, decisions, blockers, and follow-ups.',
+    features: [
+      'Structured agenda sections with reordering',
+      'Open item carryover between meetings',
+      'Timebox allocation and preset templates',
+      'Owner and status tracking per item',
+      'Separate exec-ready and EA internal outputs',
+    ],
+    href: '/tools/executive-1on1-prep',
+    badge: 'Members',
+    icon: '👥',
+    cta: 'Open 1:1 Prep Tool',
+    external: false,
+  },
+  {
     name: 'EAwiz GPT',
     description:
       'Your AI-powered assistant specifically trained for Executive Assistant tasks. Draft emails, create agendas, plan travel, and more.',
