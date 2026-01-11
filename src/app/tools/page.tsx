@@ -108,6 +108,23 @@ const tools = [
     external: false,
   },
   {
+    name: 'Inbox Intelligence',
+    description:
+      'Quickly triage inbox content by organizing messages into priorities, actions, delegations, and follow-ups.',
+    features: [
+      'Parse and categorize emails by priority',
+      'Urgent, Exec Decision, EA Handle, Waiting, FYI, Archive categories',
+      'Generate exec summaries and EA action lists',
+      'Track follow-ups with scheduled dates',
+      'Save and load triage sessions',
+    ],
+    href: '/tools/inbox-intelligence',
+    badge: 'Members',
+    icon: '📧',
+    cta: 'Open Inbox Intelligence',
+    external: false,
+  },
+  {
     name: 'EAwiz GPT',
     description:
       'Your AI-powered assistant specifically trained for Executive Assistant tasks. Draft emails, create agendas, plan travel, and more.',
