@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Textarea } from '@/components/ui/Textarea';
-import { createClient } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase-browser';
+
 
 interface ReplyFormProps {
   threadId: string;
