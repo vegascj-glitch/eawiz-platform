@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Textarea } from '@/components/ui/Textarea';
-import { createClient } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase-browser';
+
 import type { LoungeCategory } from '@/types/database';
 
 interface CreateThreadFormProps {
