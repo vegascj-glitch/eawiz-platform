@@ -2,10 +2,16 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase';
+import { createBrowserSupabaseClient } from '@/lib/supabase-browser';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from '@/components/ui/Card';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -17,7 +23,7 @@ export default function LoginPage() {
     setIsLoading(true);
     setMessage(null);
 
-    const supabase = createClient();
+    const supabase = createBrowserSupabaseClient();
 
     const { error } = await supabase.auth.signInWithOtp({
       email,
@@ -44,10 +50,9 @@ export default function LoginPage() {
         <Card variant="bordered">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl">Welcome Back</CardTitle>
-            <CardDescription>
-              Sign in with your email to access your account
-            </CardDescription>
+            <CardDescription>Sign in with your email to access your account</CardDescription>
           </CardHeader>
+
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
@@ -77,12 +82,7 @@ export default function LoginPage() {
                 </div>
               )}
 
-              <Button
-                type="submit"
-                variant="primary"
-                className="w-full"
-                isLoading={isLoading}
-              >
+              <Button type="submit" variant="primary" className="w-full" isLoading={isLoading}>
                 Send Magic Link
               </Button>
             </form>
