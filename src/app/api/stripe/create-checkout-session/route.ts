@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getProfile, createServerSupabaseClient } from '@/lib/supabase';
+import { getProfile, createServerSupabaseClient } from '@/lib/supabase-server';
 import { stripe, PRICE_ID, getOrCreateCustomer } from '@/lib/stripe';
 
 export async function POST() {
@@ -19,8 +19,8 @@ export async function POST() {
     // Update profile with Stripe customer ID if not already set
     if (!profile.stripe_customer_id) {
       const supabase = await createServerSupabaseClient();
-      await supabase
-        .from('profiles')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (supabase.from('profiles') as any)
         .update({ stripe_customer_id: customer.id })
         .eq('id', profile.id);
     }

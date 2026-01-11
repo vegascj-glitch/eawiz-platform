@@ -1,53 +1,55 @@
 // src/lib/supabase-server.ts
-import { createServerClient } from '@supabase/ssr';
-import type { Database } from '@/types/database';
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import type { Profile } from '@/types/database';
 import { cookies } from 'next/headers';
 
 export async function createServerSupabaseClient() {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
 
-  return createServerClient<Database>(
+  return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
+        getAll() {
+          return cookieStore.getAll();
         },
-        set(name: string, value: string, options: any) {
-          cookieStore.set({ name, value, ...options });
-        },
-        remove(name: string, options: any) {
-          cookieStore.set({ name, value: '', ...options });
+        setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              cookieStore.set(name, value, options);
+            });
+          } catch {
+            // If called from a Server Component, this can fail silently.
+            // It's fine for build-time / read-only scenarios.
+          }
         },
       },
     }
   );
 }
 
-// Minimal safe helpers (so imports compile even before Supabase exists)
-export async function getProfile() {
+export async function getProfile(): Promise<Profile | null> {
   const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) return null;
+  if (!user) {
+    return null;
+  }
 
-  const { data } = await supabase
+  const { data: profile } = await supabase
     .from('profiles')
     .select('*')
     .eq('id', user.id)
-    .maybeSingle();
+    .single();
 
-  return data ?? null;
+  return profile;
 }
 
-export async function isActiveMember() {
+export async function isActiveMember(): Promise<boolean> {
   const profile = await getProfile();
-  if (!profile) return false;
-
-  // Adjust this field name if your schema differs.
-  // Common patterns: profile.is_active_member, profile.membership_status, profile.plan
-  return Boolean((profile as any).is_active_member || (profile as any).active_member);
+  if (!profile) {
+    return false;
+  }
+  return profile.subscription_status === 'active';
 }

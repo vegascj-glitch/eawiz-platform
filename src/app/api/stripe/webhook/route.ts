@@ -4,10 +4,9 @@ import Stripe from 'stripe';
 import { stripe } from '@/lib/stripe';
 import { createClient } from '@supabase/supabase-js';
 import { sendWelcomeEmail } from '@/lib/resend';
-import type { Database } from '@/types/database';
 
 // Use service role for webhook to bypass RLS
-const supabaseAdmin = createClient<Database>(
+const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );

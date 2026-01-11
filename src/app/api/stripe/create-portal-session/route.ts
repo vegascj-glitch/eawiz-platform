@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getProfile } from '@/lib/supabase';
+import { getProfile } from '@/lib/supabase-server';
 import { createCustomerPortalSession } from '@/lib/stripe';
 
 export async function POST() {

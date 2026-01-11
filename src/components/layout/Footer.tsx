@@ -1,7 +1,9 @@
 import Link from 'next/link';
 import { EXTERNAL_LINKS } from '@/lib/utils';
 
-const footerLinks = {
+type FooterLink = { label: string; href: string; external?: boolean };
+
+const footerLinks: Record<string, FooterLink[]> = {
   Product: [
     { label: 'Tools', href: '/tools' },
     { label: 'Prompts', href: '/prompts' },

@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { createServerSupabaseClient, getProfile, isActiveMember } from '@/lib/supabase';
+import { createServerSupabaseClient, getProfile, isActiveMember } from '@/lib/supabase-server';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';

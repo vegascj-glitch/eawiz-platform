@@ -70,15 +70,15 @@ export default function JoinPage() {
           <CardHeader className="text-center">
             <CardTitle className="text-2xl">Join EAwiz</CardTitle>
             <CardDescription>
-              Enter your email and we’ll send you a magic link to get started.
+              Enter your email and we'll send you a magic link to get started.
             </CardDescription>
           </CardHeader>
 
           <CardContent>
             {missingEnv && (
               <div className="mb-4 p-3 rounded-lg text-sm bg-amber-50 text-amber-900 border border-amber-200">
-                Heads up: Supabase env vars aren’t set yet. The page will still
-                load, but signup won’t work until you add them in Vercel.
+                Heads up: Supabase env vars aren't set yet. The page will still
+                load, but signup won't work until you add them in Vercel.
               </div>
             )}
 

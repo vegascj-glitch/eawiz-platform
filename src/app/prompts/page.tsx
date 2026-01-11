@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { createServerSupabaseClient, isActiveMember } from '@/lib/supabase';
+import { createServerSupabaseClient, isActiveMember } from '@/lib/supabase-server';
 import { PromptCard } from '@/components/PromptCard';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -24,11 +24,11 @@ export default async function PromptsPage({ searchParams }: PromptsPageProps) {
   const { data: categories } = await supabase
     .from('prompt_categories')
     .select('*')
-    .order('display_order');
+    .order('display_order') as { data: PromptCategory[] | null };
 
   // Fetch prompts with optional filtering
-  let promptsQuery = supabase
-    .from('prompts')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let promptsQuery = (supabase.from('prompts') as any)
     .select('*, category:prompt_categories(*)');
 
   if (params.category) {
@@ -44,7 +44,7 @@ export default async function PromptsPage({ searchParams }: PromptsPageProps) {
     );
   }
 
-  const { data: prompts } = await promptsQuery.order('is_featured', { ascending: false });
+  const { data: prompts } = await promptsQuery.order('is_featured', { ascending: false }) as { data: (Prompt & { category: PromptCategory })[] | null };
 
   const selectedCategory = params.category || 'all';
 

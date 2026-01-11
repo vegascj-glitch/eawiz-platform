@@ -1,11 +1,11 @@
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
-import { createServerSupabaseClient, getProfile, isActiveMember } from '@/lib/supabase';
+import { createServerSupabaseClient, getProfile, isActiveMember } from '@/lib/supabase-server';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { getRelativeTime } from '@/lib/utils';
 import { ReplyForm } from '@/components/ReplyForm';
-import type { Profile, LoungePost, LoungeCategory } from '@/types/database';
+import type { Profile, LoungePost, LoungeCategory, LoungeThread } from '@/types/database';
 
 interface ThreadPageProps {
   params: Promise<{ id: string }>;
@@ -13,6 +13,11 @@ interface ThreadPageProps {
 
 type PostWithAuthor = LoungePost & {
   author: Pick<Profile, 'id' | 'first_name' | 'last_name' | 'email'>;
+};
+
+type ThreadWithDetails = LoungeThread & {
+  author: Pick<Profile, 'id' | 'first_name' | 'last_name' | 'email'>;
+  category: LoungeCategory;
 };
 
 export default async function ThreadPage({ params }: ThreadPageProps) {
@@ -35,7 +40,7 @@ export default async function ThreadPage({ params }: ThreadPageProps) {
       category:lounge_categories(*)
     `)
     .eq('id', id)
-    .single();
+    .single() as { data: ThreadWithDetails | null };
 
   if (!thread) {
     notFound();
@@ -49,10 +54,10 @@ export default async function ThreadPage({ params }: ThreadPageProps) {
       author:profiles(id, first_name, last_name, email)
     `)
     .eq('thread_id', id)
-    .order('created_at', { ascending: true });
+    .order('created_at', { ascending: true }) as { data: PostWithAuthor[] | null };
 
-  const author = thread.author as Pick<Profile, 'id' | 'first_name' | 'last_name' | 'email'>;
-  const category = thread.category as LoungeCategory;
+  const author = thread.author;
+  const category = thread.category;
 
   return (
     <>

@@ -1,4 +1,4 @@
-import { createServerSupabaseClient, getProfile, isActiveMember } from '@/lib/supabase';
+import { createServerSupabaseClient, getProfile, isActiveMember } from '@/lib/supabase-server';
 import { EventCard } from '@/components/EventCard';
 import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
@@ -12,7 +12,7 @@ export default async function EventsPage() {
   const { data: events } = await supabase
     .from('events')
     .select('*')
-    .order('start_time', { ascending: true });
+    .order('start_time', { ascending: true }) as { data: Event[] | null };
 
   const upcomingEvents = events?.filter((e) => new Date(e.start_time) >= new Date()) || [];
   const pastEvents = events?.filter((e) => new Date(e.start_time) < new Date()) || [];
