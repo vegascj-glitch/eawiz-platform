@@ -1,16 +1,15 @@
-import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { isActiveMember } from '@/lib/supabase-server';
-import { AvailabilityGrid } from '@/components/tools/availability-grid/AvailabilityGrid';
+import { ExecutiveBrief } from '@/components/tools/executive-brief/ExecutiveBrief';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
 
 export const metadata = {
-  title: 'Availability Grid - EAwiz',
-  description: 'Select meeting times across time zones and generate a ready-to-send email.',
+  title: 'Executive Brief Generator - EAwiz',
+  description: 'Create professional daily and weekly briefing documents for your executive.',
 };
 
-export default async function AvailabilityGridPage() {
+export default async function ExecutiveBriefPage() {
   const isMember = await isActiveMember();
 
   if (!isMember) {
@@ -27,9 +26,9 @@ export default async function AvailabilityGridPage() {
               </svg>
               Back to Tools
             </Link>
-            <h1 className="text-4xl font-bold">Availability Grid</h1>
+            <h1 className="text-4xl font-bold">Executive Brief Generator</h1>
             <p className="mt-4 text-lg text-primary-100 max-w-2xl">
-              Select meeting times across time zones and generate a ready-to-send email.
+              Create professional daily and weekly briefing documents for your executive.
             </p>
           </div>
         </section>
@@ -41,7 +40,7 @@ export default async function AvailabilityGridPage() {
                 <div className="mx-auto text-6xl mb-4">🔒</div>
                 <CardTitle className="text-2xl">Members Only</CardTitle>
                 <CardDescription className="text-base mt-2">
-                  The Availability Grid tool is available exclusively to EAwiz members.
+                  The Executive Brief Generator is available exclusively to EAwiz members.
                   Join today to access this and all our other premium tools.
                 </CardDescription>
               </CardHeader>
@@ -51,28 +50,28 @@ export default async function AvailabilityGridPage() {
                     <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
-                    Visual weekly calendar grid
+                    Daily and weekly briefing modes
                   </li>
                   <li className="flex items-center gap-2 text-gray-600">
                     <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
-                    Multi-timezone support with day-shift indicators
+                    Customizable sections and formatting
                   </li>
                   <li className="flex items-center gap-2 text-gray-600">
                     <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
-                    Professional email templates
+                    Private EA-only internal notes
                   </li>
                   <li className="flex items-center gap-2 text-gray-600">
                     <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
-                    ICS calendar export for holds
+                    Copy as plain text or HTML
                   </li>
                 </ul>
-                <Link href="/join?from=availability-grid">
+                <Link href="/join?from=executive-brief">
                   <Button variant="primary" size="lg">
                     Join EAwiz - $20/month
                   </Button>
@@ -98,16 +97,16 @@ export default async function AvailabilityGridPage() {
             </svg>
             Back to Tools
           </Link>
-          <h1 className="text-3xl font-bold">Availability Grid</h1>
+          <h1 className="text-3xl font-bold">Executive Brief Generator</h1>
           <p className="mt-2 text-primary-100">
-            Select meeting times across time zones and generate a ready-to-send email.
+            Create professional daily and weekly briefing documents for your executive.
           </p>
         </div>
       </section>
 
       <section className="section bg-gray-50">
         <div className="container">
-          <AvailabilityGrid />
+          <ExecutiveBrief />
         </div>
       </section>
     </>

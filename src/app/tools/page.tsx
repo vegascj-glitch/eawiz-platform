@@ -23,6 +23,23 @@ const tools = [
     external: false,
   },
   {
+    name: 'Executive Brief Generator',
+    description:
+      'Create professional daily and weekly briefing documents for your executive with customizable sections and tone.',
+    features: [
+      'Daily and weekly briefing modes',
+      'Customizable sections (schedule, priorities, decisions, FYI)',
+      'Formal and conversational tone options',
+      'Private EA-only internal notes',
+      'Copy as plain text or HTML',
+    ],
+    href: '/tools/executive-brief',
+    badge: 'Members',
+    icon: '📋',
+    cta: 'Open Brief Generator',
+    external: false,
+  },
+  {
     name: 'EAwiz GPT',
     description:
       'Your AI-powered assistant specifically trained for Executive Assistant tasks. Draft emails, create agendas, plan travel, and more.',
