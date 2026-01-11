@@ -1,19 +1,22 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-// Use service role to bypass RLS for incrementing copy count
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
 export async function POST(req: Request) {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !supabaseServiceKey) {
+    return new Response(null, { status: 204 });
+  }
+
   try {
     const { promptId } = await req.json();
 
     if (!promptId) {
       return NextResponse.json({ error: 'Missing promptId' }, { status: 400 });
     }
+
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
     // Try using the increment_copy_count RPC if it exists
     const { error: rpcError } = await supabaseAdmin.rpc('increment_copy_count', {
