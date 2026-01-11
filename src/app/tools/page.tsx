@@ -74,6 +74,23 @@ const tools = [
     external: false,
   },
   {
+    name: 'Executive Travel Brief Builder',
+    description:
+      'Build polished travel itineraries with contacts, addresses, schedules, and packing lists.',
+    features: [
+      'Day-by-day itinerary with flight, lodging, ground, meeting segments',
+      'Reusable contacts and locations library',
+      'Packing list templates (business, conference, weather)',
+      'Trip preferences and document checklist',
+      'Separate exec-ready and EA internal outputs',
+    ],
+    href: '/tools/executive-travel-brief',
+    badge: 'Members',
+    icon: '✈️',
+    cta: 'Open Travel Brief Builder',
+    external: false,
+  },
+  {
     name: 'EAwiz GPT',
     description:
       'Your AI-powered assistant specifically trained for Executive Assistant tasks. Draft emails, create agendas, plan travel, and more.',
