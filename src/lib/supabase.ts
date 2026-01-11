@@ -1,3 +1,4 @@
 // src/lib/supabase.ts
-export { createBrowserSupabaseClient, createClient } from './supabase-browser';
-export { createServerSupabaseClient, getProfile, isActiveMember } from './supabase-server';
+// Client-only exports. Safe to import from "use client" components.
+
+export { createClient, createBrowserSupabaseClient } from './supabase-browser';
