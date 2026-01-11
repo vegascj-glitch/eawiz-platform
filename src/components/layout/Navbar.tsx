@@ -14,6 +14,7 @@ interface NavbarProps {
 const publicLinks = [
   { href: '/', label: 'Home' },
   { href: '/tools', label: 'Tools' },
+  { href: '/lounge', label: 'EA Lounge' },
   { href: '/events', label: 'Events' },
   { href: '/about', label: 'About' },
   { href: '/speaking', label: 'Speaking' },
@@ -21,7 +22,6 @@ const publicLinks = [
 
 const memberLinks = [
   { href: '/prompts', label: 'Prompts' },
-  { href: '/lounge', label: 'Lounge' },
 ];
 
 export function Navbar({ user }: NavbarProps) {

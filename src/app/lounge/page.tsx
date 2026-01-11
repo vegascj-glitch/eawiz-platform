@@ -1,11 +1,11 @@
-import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { createServerSupabaseClient, getProfile, isActiveMember } from '@/lib/supabase-server';
+import { createServerSupabaseClient, getProfile } from '@/lib/supabase-server';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { getRelativeTime } from '@/lib/utils';
 import { CreateThreadForm } from '@/components/CreateThreadForm';
+import { LoungeFilters } from '@/components/lounge/LoungeFilters';
 import type { LoungeThread, LoungeCategory, Profile } from '@/types/database';
 
 type ThreadWithDetails = LoungeThread & {
@@ -13,13 +13,18 @@ type ThreadWithDetails = LoungeThread & {
   category: LoungeCategory;
 };
 
-export default async function LoungePage() {
-  const profile = await getProfile();
-  const isMember = await isActiveMember();
+interface LoungePageProps {
+  searchParams: Promise<{
+    category?: string;
+    filter?: string;
+    search?: string;
+  }>;
+}
 
-  if (!isMember) {
-    redirect('/join?from=lounge');
-  }
+export default async function LoungePage({ searchParams }: LoungePageProps) {
+  const params = await searchParams;
+  const profile = await getProfile();
+  const isLoggedIn = !!profile;
 
   const supabase = await createServerSupabaseClient();
 
@@ -29,28 +34,62 @@ export default async function LoungePage() {
     .select('*')
     .order('display_order');
 
-  // Fetch recent threads
-  const { data: threads } = await supabase
+  // Build query for threads
+  let query = supabase
     .from('lounge_threads')
     .select(`
       *,
       author:profiles(id, first_name, last_name, email),
       category:lounge_categories(*)
-    `)
-    .order('is_pinned', { ascending: false })
-    .order('last_activity_at', { ascending: false })
-    .limit(20);
+    `);
+
+  // Apply category filter
+  if (params.category) {
+    const category = categories?.find((c: LoungeCategory) => c.slug === params.category);
+    if (category) {
+      query = query.eq('category_id', category.id);
+    }
+  }
+
+  // Apply search filter
+  if (params.search) {
+    query = query.or(`title.ilike.%${params.search}%,content.ilike.%${params.search}%`);
+  }
+
+  // Apply sorting based on filter
+  const filter = params.filter || 'latest';
+  switch (filter) {
+    case 'top':
+      query = query.order('reply_count', { ascending: false });
+      break;
+    case 'unanswered':
+      query = query.eq('reply_count', 0).order('created_at', { ascending: false });
+      break;
+    case 'latest':
+    default:
+      query = query
+        .order('is_pinned', { ascending: false })
+        .order('last_activity_at', { ascending: false });
+      break;
+  }
+
+  const { data: threads } = await query.limit(20);
 
   return (
     <>
       {/* Header */}
       <section className="bg-gradient-to-br from-primary-600 to-primary-800 text-white">
         <div className="container py-12">
-          <h1 className="text-4xl font-bold text-center">The EAwiz Lounge</h1>
+          <h1 className="text-4xl font-bold text-center">The EA Lounge</h1>
           <p className="mt-4 text-lg text-primary-100 text-center max-w-2xl mx-auto">
             Connect with fellow Executive Assistants, share strategies, and learn from
             the community.
           </p>
+          {!isLoggedIn && (
+            <p className="mt-2 text-sm text-primary-200 text-center">
+              <Link href="/login" className="underline hover:text-white">Sign in</Link> to join the conversation
+            </p>
+          )}
         </div>
       </section>
 
@@ -68,7 +107,11 @@ export default async function LoungePage() {
                     <li>
                       <Link
                         href="/lounge"
-                        className="block px-3 py-2 rounded-lg bg-primary-50 text-primary-700 font-medium"
+                        className={`block px-3 py-2 rounded-lg ${
+                          !params.category
+                            ? 'bg-primary-50 text-primary-700 font-medium'
+                            : 'hover:bg-gray-100 text-gray-700'
+                        }`}
                       >
                         All Discussions
                       </Link>
@@ -77,7 +120,11 @@ export default async function LoungePage() {
                       <li key={category.id}>
                         <Link
                           href={`/lounge?category=${category.slug}`}
-                          className="block px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                          className={`block px-3 py-2 rounded-lg ${
+                            params.category === category.slug
+                              ? 'bg-primary-50 text-primary-700 font-medium'
+                              : 'hover:bg-gray-100 text-gray-700'
+                          }`}
                         >
                           {category.name}
                         </Link>
@@ -113,12 +160,35 @@ export default async function LoungePage() {
                   </ul>
                 </CardContent>
               </Card>
+
+              {/* Login CTA for anonymous users */}
+              {!isLoggedIn && (
+                <Card variant="bordered" className="mt-4 bg-primary-50 border-primary-200">
+                  <CardContent className="py-4">
+                    <p className="text-sm text-primary-800 mb-3">
+                      Join the conversation! Sign in to start discussions and reply to threads.
+                    </p>
+                    <Link href="/login?from=lounge">
+                      <Button variant="primary" size="sm" className="w-full">
+                        Sign In to Post
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+              )}
             </div>
 
             {/* Main Content - Threads */}
             <div className="lg:col-span-3">
-              {/* Create Thread */}
-              {profile && (
+              {/* Filters and Search */}
+              <LoungeFilters
+                currentFilter={filter}
+                currentSearch={params.search || ''}
+                currentCategory={params.category || ''}
+              />
+
+              {/* Create Thread - Only for logged in users */}
+              {isLoggedIn && profile ? (
                 <Card variant="bordered" className="mb-6">
                   <CardHeader>
                     <CardTitle className="text-lg">Start a Discussion</CardTitle>
@@ -128,6 +198,17 @@ export default async function LoungePage() {
                       categories={categories || []}
                       userId={profile.id}
                     />
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card variant="bordered" className="mb-6 bg-gray-50">
+                  <CardContent className="py-6 text-center">
+                    <p className="text-gray-600 mb-3">Want to start a discussion?</p>
+                    <Link href="/login?from=lounge">
+                      <Button variant="primary">
+                        Sign In to Post
+                      </Button>
+                    </Link>
                   </CardContent>
                 </Card>
               )}
@@ -153,7 +234,7 @@ export default async function LoungePage() {
                             </div>
 
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-1">
+                              <div className="flex items-center gap-2 mb-1 flex-wrap">
                                 {thread.is_pinned && (
                                   <Badge variant="warning" size="sm">
                                     Pinned
@@ -162,6 +243,11 @@ export default async function LoungePage() {
                                 <Badge variant="default" size="sm">
                                   {thread.category?.name || 'General'}
                                 </Badge>
+                                {thread.reply_count === 0 && (
+                                  <Badge variant="info" size="sm">
+                                    Unanswered
+                                  </Badge>
+                                )}
                               </div>
 
                               <h3 className="font-semibold text-gray-900 truncate">
@@ -195,9 +281,25 @@ export default async function LoungePage() {
                 ) : (
                   <Card variant="bordered">
                     <CardContent className="py-12 text-center">
-                      <p className="text-gray-500 mb-4">
-                        No discussions yet. Be the first to start one!
+                      <div className="text-4xl mb-4">💬</div>
+                      <p className="text-gray-600 mb-2">
+                        {params.search
+                          ? `No discussions found for "${params.search}"`
+                          : filter === 'unanswered'
+                          ? 'No unanswered discussions right now!'
+                          : 'No discussions yet.'}
                       </p>
+                      {isLoggedIn ? (
+                        <p className="text-gray-500 text-sm">Be the first to start a conversation!</p>
+                      ) : (
+                        <div className="mt-4">
+                          <Link href="/login?from=lounge">
+                            <Button variant="primary" size="sm">
+                              Sign In to Start a Discussion
+                            </Button>
+                          </Link>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 )}

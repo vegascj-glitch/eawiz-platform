@@ -1,6 +1,7 @@
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { createServerSupabaseClient, getProfile, isActiveMember } from '@/lib/supabase-server';
+import { createServerSupabaseClient, getProfile } from '@/lib/supabase-server';
+import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { getRelativeTime } from '@/lib/utils';
@@ -23,11 +24,7 @@ type ThreadWithDetails = LoungeThread & {
 export default async function ThreadPage({ params }: ThreadPageProps) {
   const { id } = await params;
   const profile = await getProfile();
-  const isMember = await isActiveMember();
-
-  if (!isMember) {
-    redirect('/join?from=lounge');
-  }
+  const isLoggedIn = !!profile;
 
   const supabase = await createServerSupabaseClient();
 
@@ -171,12 +168,23 @@ export default async function ThreadPage({ params }: ThreadPageProps) {
             )}
           </div>
 
-          {/* Reply Form */}
-          {profile && (
+          {/* Reply Form - Only for logged in users */}
+          {isLoggedIn && profile ? (
             <Card variant="bordered">
               <CardContent className="py-4">
                 <h3 className="font-semibold text-gray-900 mb-4">Add a Reply</h3>
                 <ReplyForm threadId={id} userId={profile.id} />
+              </CardContent>
+            </Card>
+          ) : (
+            <Card variant="bordered" className="bg-gray-50">
+              <CardContent className="py-6 text-center">
+                <p className="text-gray-600 mb-3">Want to join the conversation?</p>
+                <Link href={`/login?from=lounge/thread/${id}`}>
+                  <Button variant="primary">
+                    Sign In to Reply
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           )}
