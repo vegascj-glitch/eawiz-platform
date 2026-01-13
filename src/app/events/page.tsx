@@ -9,10 +9,14 @@ export default async function EventsPage() {
   const profile = await getProfile();
   const isMember = await isActiveMember();
 
-  const { data: events } = await supabase
-    .from('events')
-    .select('*')
-    .order('start_time', { ascending: true }) as { data: Event[] | null };
+  let events: Event[] | null = null;
+  if (supabase) {
+    const { data } = await supabase
+      .from('events')
+      .select('*')
+      .order('start_time', { ascending: true }) as { data: Event[] | null };
+    events = data;
+  }
 
   const upcomingEvents = events?.filter((e) => new Date(e.start_time) >= new Date()) || [];
   const pastEvents = events?.filter((e) => new Date(e.start_time) < new Date()) || [];

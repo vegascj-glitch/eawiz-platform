@@ -36,10 +36,12 @@ export async function POST(request: NextRequest) {
     // Update profile with Stripe customer ID if not already set
     if (!profile.stripe_customer_id) {
       const supabase = await createServerSupabaseClient();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase.from('profiles') as any)
-        .update({ stripe_customer_id: customer.id })
-        .eq('id', profile.id);
+      if (supabase) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (supabase.from('profiles') as any)
+          .update({ stripe_customer_id: customer.id })
+          .eq('id', profile.id);
+      }
     }
 
     // Create checkout session with selected plan

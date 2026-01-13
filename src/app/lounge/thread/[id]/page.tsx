@@ -28,6 +28,10 @@ export default async function ThreadPage({ params }: ThreadPageProps) {
 
   const supabase = await createServerSupabaseClient();
 
+  if (!supabase) {
+    notFound();
+  }
+
   // Fetch thread
   const { data: thread } = await supabase
     .from('lounge_threads')

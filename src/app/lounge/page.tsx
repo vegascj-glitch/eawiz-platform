@@ -28,52 +28,59 @@ export default async function LoungePage({ searchParams }: LoungePageProps) {
 
   const supabase = await createServerSupabaseClient();
 
-  // Fetch categories
-  const { data: categories } = await supabase
-    .from('lounge_categories')
-    .select('*')
-    .order('display_order');
-
-  // Build query for threads
-  let query = supabase
-    .from('lounge_threads')
-    .select(`
-      *,
-      author:profiles(id, first_name, last_name, email),
-      category:lounge_categories(*)
-    `);
-
-  // Apply category filter
-  if (params.category) {
-    const category = categories?.find((c: LoungeCategory) => c.slug === params.category);
-    if (category) {
-      query = query.eq('category_id', category.id);
-    }
-  }
-
-  // Apply search filter
-  if (params.search) {
-    query = query.or(`title.ilike.%${params.search}%,content.ilike.%${params.search}%`);
-  }
-
-  // Apply sorting based on filter
+  let categories: LoungeCategory[] | null = null;
+  let threads: ThreadWithDetails[] | null = null;
   const filter = params.filter || 'latest';
-  switch (filter) {
-    case 'top':
-      query = query.order('reply_count', { ascending: false });
-      break;
-    case 'unanswered':
-      query = query.eq('reply_count', 0).order('created_at', { ascending: false });
-      break;
-    case 'latest':
-    default:
-      query = query
-        .order('is_pinned', { ascending: false })
-        .order('last_activity_at', { ascending: false });
-      break;
-  }
 
-  const { data: threads } = await query.limit(20);
+  if (supabase) {
+    // Fetch categories
+    const { data: categoriesData } = await supabase
+      .from('lounge_categories')
+      .select('*')
+      .order('display_order');
+    categories = categoriesData;
+
+    // Build query for threads
+    let query = supabase
+      .from('lounge_threads')
+      .select(`
+        *,
+        author:profiles(id, first_name, last_name, email),
+        category:lounge_categories(*)
+      `);
+
+    // Apply category filter
+    if (params.category) {
+      const category = categories?.find((c: LoungeCategory) => c.slug === params.category);
+      if (category) {
+        query = query.eq('category_id', category.id);
+      }
+    }
+
+    // Apply search filter
+    if (params.search) {
+      query = query.or(`title.ilike.%${params.search}%,content.ilike.%${params.search}%`);
+    }
+
+    // Apply sorting based on filter
+    switch (filter) {
+      case 'top':
+        query = query.order('reply_count', { ascending: false });
+        break;
+      case 'unanswered':
+        query = query.eq('reply_count', 0).order('created_at', { ascending: false });
+        break;
+      case 'latest':
+      default:
+        query = query
+          .order('is_pinned', { ascending: false })
+          .order('last_activity_at', { ascending: false });
+        break;
+    }
+
+    const { data: threadsData } = await query.limit(20);
+    threads = threadsData as ThreadWithDetails[] | null;
+  }
 
   return (
     <>

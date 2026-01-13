@@ -9,6 +9,10 @@ export async function GET(
   try {
     const { id } = await params;
     const supabase = await createServerSupabaseClient();
+    if (!supabase) {
+      return NextResponse.json({ error: 'Service unavailable' }, { status: 503 });
+    }
+
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
@@ -66,6 +70,10 @@ export async function PATCH(
   try {
     const { id } = await params;
     const supabase = await createServerSupabaseClient();
+    if (!supabase) {
+      return NextResponse.json({ error: 'Service unavailable' }, { status: 503 });
+    }
+
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
@@ -161,6 +169,10 @@ export async function DELETE(
   try {
     const { id } = await params;
     const supabase = await createServerSupabaseClient();
+    if (!supabase) {
+      return NextResponse.json({ error: 'Service unavailable' }, { status: 503 });
+    }
+
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
