@@ -24,11 +24,11 @@ export function ThemeProvider({ children, fontClasses }: ThemeProviderProps) {
     const themeParam = searchParams.get('theme');
     const fontParam = searchParams.get('font');
 
-    // Apply theme
+    // Apply theme (default to midnight)
     if (themeParam && VALID_THEMES.includes(themeParam as Theme)) {
       document.documentElement.setAttribute('data-theme', themeParam);
     } else {
-      document.documentElement.removeAttribute('data-theme');
+      document.documentElement.setAttribute('data-theme', 'midnight');
     }
 
     // Apply font
