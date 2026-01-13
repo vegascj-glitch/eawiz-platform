@@ -70,8 +70,7 @@ export default function HomePage() {
               AI-Powered Excellence for Executive Assistants
             </h1>
             <p className="mt-6 text-xl text-primary-100">
-              Join the community of forward-thinking EAs using AI to work smarter,
-              not harder. Access 380+ prompts, powerful tools, and exclusive resources.
+              Access to a first-of-its-kind suite of AI tools built specifically for EAs who want to work faster, think strategically, and operate at an executive level.
             </p>
             <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/join">
