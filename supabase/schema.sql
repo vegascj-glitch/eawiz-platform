@@ -335,3 +335,95 @@ CREATE INDEX idx_events_start_time ON events(start_time);
 CREATE INDEX idx_prompts_category ON prompts(category_id);
 CREATE INDEX idx_lounge_threads_category ON lounge_threads(category_id);
 CREATE INDEX idx_lounge_threads_last_activity ON lounge_threads(last_activity_at DESC);
+
+-- ===========================================
+-- CALENDAR AUDIT: CATEGORIES TABLE
+-- ===========================================
+CREATE TABLE calendar_categories (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  color TEXT DEFAULT '#6366f1',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id, name)
+);
+
+-- ===========================================
+-- CALENDAR AUDIT: CATEGORY RULES TABLE
+-- ===========================================
+CREATE TABLE calendar_category_rules (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  pattern TEXT NOT NULL,
+  field TEXT NOT NULL CHECK (field IN ('title', 'attendee_email', 'attendee_domain')),
+  category_name TEXT NOT NULL,
+  confidence TEXT NOT NULL DEFAULT 'high' CHECK (confidence IN ('high', 'low')),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ===========================================
+-- CALENDAR AUDIT: MEETING CLASSIFICATIONS TABLE
+-- ===========================================
+CREATE TABLE calendar_meeting_classifications (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  external_event_id TEXT,
+  title TEXT NOT NULL,
+  start_time TIMESTAMPTZ NOT NULL,
+  end_time TIMESTAMPTZ NOT NULL,
+  duration_minutes INT NOT NULL,
+  attendee_count INT DEFAULT 0,
+  category_name TEXT,
+  source TEXT NOT NULL DEFAULT 'suggested' CHECK (source IN ('user', 'rule', 'suggested')),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Enable RLS on calendar audit tables
+ALTER TABLE calendar_categories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE calendar_category_rules ENABLE ROW LEVEL SECURITY;
+ALTER TABLE calendar_meeting_classifications ENABLE ROW LEVEL SECURITY;
+
+-- CALENDAR CATEGORIES POLICIES
+CREATE POLICY "Users can view own categories" ON calendar_categories
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own categories" ON calendar_categories
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own categories" ON calendar_categories
+  FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own categories" ON calendar_categories
+  FOR DELETE USING (auth.uid() = user_id);
+
+-- CALENDAR CATEGORY RULES POLICIES
+CREATE POLICY "Users can view own rules" ON calendar_category_rules
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own rules" ON calendar_category_rules
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own rules" ON calendar_category_rules
+  FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own rules" ON calendar_category_rules
+  FOR DELETE USING (auth.uid() = user_id);
+
+-- CALENDAR MEETING CLASSIFICATIONS POLICIES
+CREATE POLICY "Users can view own classifications" ON calendar_meeting_classifications
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own classifications" ON calendar_meeting_classifications
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own classifications" ON calendar_meeting_classifications
+  FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own classifications" ON calendar_meeting_classifications
+  FOR DELETE USING (auth.uid() = user_id);
+
+-- CALENDAR AUDIT INDEXES
+CREATE INDEX idx_calendar_categories_user ON calendar_categories(user_id);
+CREATE INDEX idx_calendar_rules_user ON calendar_category_rules(user_id);
+CREATE INDEX idx_calendar_classifications_user ON calendar_meeting_classifications(user_id);
+CREATE INDEX idx_calendar_classifications_start ON calendar_meeting_classifications(start_time);

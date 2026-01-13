@@ -180,17 +180,17 @@ const tools = [
     description:
       'Analyze your calendar data to gain insights into meeting patterns, time allocation, and opportunities to reclaim time for your executive.',
     features: [
-      'Upload Outlook or Google Calendar exports',
-      'Visual meeting breakdown charts',
-      'Time allocation analysis',
-      'Meeting frequency insights',
-      'AI-generated executive summary',
+      'Import from Outlook or Google Calendar CSV',
+      'Auto-categorize meetings with smart rules',
+      'Visual time allocation breakdown',
+      'Date range filtering with presets',
+      'Save custom category rules',
     ],
-    href: EXTERNAL_LINKS.calendarAudit,
-    badge: 'Streamlit',
+    href: '/tools/calendar-audit',
+    badge: 'Members',
     icon: '📊',
-    cta: 'Launch Calendar Audit',
-    external: true,
+    cta: 'Open Calendar Audit',
+    external: false,
   },
 ];
 
