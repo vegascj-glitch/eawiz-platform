@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 
@@ -39,16 +40,16 @@ const stats = [
 const team = [
   {
     name: 'Courtney',
-    role: 'Founder',
+    role: 'Founder & Developer',
     bio: "Courtney is a seasoned Executive Assistant with over a decade of experience supporting C-suite executives at Fortune 500 companies. Her journey into AI began when she discovered how tools like ChatGPT could transform the daily workflow of administrative professionals.\n\nAfter years of developing her own AI-powered systems and sharing them with colleagues, Courtney founded EAwiz to bring these innovations to the broader EA community. She's passionate about helping Executive Assistants evolve from task managers to strategic partners through the power of AI.\n\nWhen she's not building tools or hosting AI for Admins sessions, Courtney enjoys mentoring aspiring EAs and speaking at industry conferences about the future of the profession.",
-    imagePlaceholder: 'Courtney Headshot Placeholder',
+    image: '/images/courtney.jpg',
     linkedIn: 'https://www.linkedin.com/in/courtney-eawiz/',
   },
   {
     name: 'Molly',
-    role: 'Co-Founder & Community Lead',
+    role: 'Co-Founder',
     bio: "Molly brings a unique blend of community building expertise and administrative excellence to EAwiz. With a background in operations management and a deep understanding of the challenges EAs face daily, she leads The EAwiz Lounge community with warmth and intention.\n\nHer vision for the community is simple: create a space where EAs can learn from each other, share wins and challenges, and grow together. Molly believes that the collective wisdom of experienced EAs is one of the profession's greatest untapped resources.\n\nAs Community Lead, Molly curates discussions, hosts virtual meetups, and ensures every member feels welcomed and supported. She's known for her ability to bring people together and create meaningful connections.",
-    imagePlaceholder: 'Molly Headshot Placeholder',
+    image: '/images/molly.jpg',
     linkedIn: 'https://www.linkedin.com/in/molly-eawiz/',
   },
 ];
@@ -135,23 +136,16 @@ export default function AboutPage() {
                   index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'
                 } gap-8 md:gap-12 items-center`}
               >
-                {/* Image Placeholder */}
+                {/* Team Member Image */}
                 <div className="flex-shrink-0 w-full md:w-1/3">
-                  <div className="aspect-square rounded-2xl bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center border-2 border-dashed border-primary-300">
-                    <div className="text-center p-6">
-                      <div className="w-24 h-24 mx-auto rounded-full bg-primary-200 flex items-center justify-center mb-4">
-                        <svg
-                          className="w-12 h-12 text-primary-400"
-                          fill="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                        </svg>
-                      </div>
-                      <p className="text-sm text-primary-600 font-medium">
-                        {member.imagePlaceholder}
-                      </p>
-                    </div>
+                  <div className="aspect-square rounded-2xl overflow-hidden">
+                    <Image
+                      src={member.image}
+                      alt={`${member.name} headshot`}
+                      width={400}
+                      height={400}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                 </div>
 
