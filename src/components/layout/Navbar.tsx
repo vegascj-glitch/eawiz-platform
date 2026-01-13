@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
@@ -13,13 +13,17 @@ interface NavbarProps {
 
 const publicLinks = [
   { href: '/', label: 'Home' },
+  { href: '/about', label: 'About' },
+  { href: '/pricing', label: 'Pricing' },
   { href: '/tools', label: 'Tools' },
-  { href: '/prompts', label: 'Prompts' },
   { href: '/lounge', label: 'EA Lounge' },
   { href: '/events', label: 'Events' },
-  { href: '/about', label: 'About' },
-  { href: '/coaching', label: 'Coaching' },
-  { href: '/speaking', label: 'Speaking' },
+];
+
+const servicesLinks = [
+  { href: '/services/coaching', label: 'Coaching' },
+  { href: '/services/speaking', label: 'Speaking' },
+  { href: '/services/custom-app-development', label: 'Custom App Development' },
 ];
 
 const memberLinks: { href: string; label: string }[] = [];
@@ -27,16 +31,31 @@ const memberLinks: { href: string; label: string }[] = [];
 export function Navbar({ user }: NavbarProps) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [servicesOpen, setServicesOpen] = useState(false);
+  const servicesRef = useRef<HTMLDivElement>(null);
 
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/';
     return pathname.startsWith(href);
   };
 
+  const isServicesActive = servicesLinks.some(link => pathname.startsWith(link.href));
+
   const isMember = user?.subscription_status === 'active' || user?.role === 'admin';
   const isAdmin = user?.role === 'admin';
 
   const navLinks = [...publicLinks, ...(isMember ? memberLinks : [])];
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (servicesRef.current && !servicesRef.current.contains(event.target as Node)) {
+        setServicesOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
     <nav className="bg-white border-b border-gray-100 sticky top-0 z-50">
@@ -61,6 +80,52 @@ export function Navbar({ user }: NavbarProps) {
                   {link.label}
                 </Link>
               ))}
+
+              {/* Services Dropdown */}
+              <div className="relative" ref={servicesRef}>
+                <button
+                  onClick={() => setServicesOpen(!servicesOpen)}
+                  className={cn(
+                    'inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 transition-colors',
+                    isServicesActive
+                      ? 'border-primary-600 text-primary-600'
+                      : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+                  )}
+                >
+                  Services
+                  <svg
+                    className={cn('ml-1 h-4 w-4 transition-transform', servicesOpen && 'rotate-180')}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {servicesOpen && (
+                  <div className="absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
+                    <div className="py-1">
+                      {servicesLinks.map((link) => (
+                        <Link
+                          key={link.href}
+                          href={link.href}
+                          className={cn(
+                            'block px-4 py-2 text-sm',
+                            isActive(link.href)
+                              ? 'bg-primary-50 text-primary-700'
+                              : 'text-gray-700 hover:bg-gray-50'
+                          )}
+                          onClick={() => setServicesOpen(false)}
+                        >
+                          {link.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {isAdmin && (
                 <Link
                   href="/admin/leads"
@@ -167,6 +232,27 @@ export function Navbar({ user }: NavbarProps) {
                 {link.label}
               </Link>
             ))}
+
+            {/* Mobile Services Section */}
+            <div className="pl-3 pr-4 py-2 text-sm font-semibold text-gray-400 uppercase tracking-wider">
+              Services
+            </div>
+            {servicesLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={cn(
+                  'block pl-6 pr-4 py-2 border-l-4 text-base font-medium',
+                  isActive(link.href)
+                    ? 'bg-primary-50 border-primary-600 text-primary-600'
+                    : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300'
+                )}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {link.label}
+              </Link>
+            ))}
+
             {isAdmin && (
               <Link
                 href="/admin/leads"

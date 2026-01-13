@@ -32,24 +32,10 @@ const timezoneOptions = [
   { value: 'other', label: 'Other' },
 ];
 
-const coachOptions = [
-  {
-    value: 'courtney',
-    name: 'Courtney',
-    description: 'Founder of EAwiz, AI & productivity expert',
-  },
-  {
-    value: 'molly',
-    name: 'Molly',
-    description: 'Career coach & EA strategy specialist',
-  },
-];
-
 export function CoachingForm() {
   const searchParams = useSearchParams();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedCoach, setSelectedCoach] = useState<string>('');
   const [showSuccess, setShowSuccess] = useState(false);
   const [showCanceled, setShowCanceled] = useState(false);
 
@@ -76,7 +62,7 @@ export function CoachingForm() {
     const timezone = formData.get('timezone') as string;
     const availability = formData.get('availability') as string;
 
-    if (!name || !email || !topic || !timezone || !availability || !selectedCoach) {
+    if (!name || !email || !topic || !timezone || !availability) {
       setError('Please fill in all required fields');
       setIsSubmitting(false);
       return;
@@ -89,7 +75,7 @@ export function CoachingForm() {
       topic,
       timezone,
       availability,
-      coach: selectedCoach,
+      coach: 'courtney', // Always Courtney
       notes: formData.get('notes') as string,
     };
 
@@ -126,7 +112,7 @@ export function CoachingForm() {
           Payment Successful!
         </h2>
         <p className="text-gray-600 mb-6">
-          Thank you for booking a coaching session! We&apos;ll be in touch within 24 hours
+          Thank you for booking a coaching session with Courtney! We&apos;ll be in touch within 24 hours
           to schedule your 1:1 session.
         </p>
         <p className="text-sm text-gray-500">
@@ -150,7 +136,7 @@ export function CoachingForm() {
           variant="primary"
           onClick={() => {
             setShowCanceled(false);
-            window.history.replaceState({}, '', '/coaching');
+            window.history.replaceState({}, '', '/services/coaching');
           }}
         >
           Try Again
@@ -223,56 +209,23 @@ export function CoachingForm() {
         </div>
       </div>
 
-      {/* Coach Selection */}
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Choose Your Coach *
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {coachOptions.map((coach) => (
-            <label
-              key={coach.value}
-              className={`relative flex cursor-pointer rounded-lg border p-4 transition-colors ${
-                selectedCoach === coach.value
-                  ? 'border-primary-600 bg-primary-50 ring-2 ring-primary-600'
-                  : 'border-gray-300 hover:border-gray-400'
-              }`}
+      {/* Coach Info - Courtney Only */}
+      <div className="p-4 bg-primary-50 border border-primary-200 rounded-lg">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-full bg-primary-200 flex items-center justify-center">
+            <svg
+              className="w-6 h-6 text-primary-600"
+              fill="currentColor"
+              viewBox="0 0 24 24"
             >
-              <input
-                type="radio"
-                name="coach"
-                value={coach.value}
-                checked={selectedCoach === coach.value}
-                onChange={(e) => setSelectedCoach(e.target.value)}
-                className="sr-only"
-              />
-              <div className="flex flex-col">
-                <span className="text-lg font-semibold text-gray-900">
-                  {coach.name}
-                </span>
-                <span className="text-sm text-gray-600">{coach.description}</span>
-              </div>
-              {selectedCoach === coach.value && (
-                <svg
-                  className="absolute top-4 right-4 h-5 w-5 text-primary-600"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              )}
-            </label>
-          ))}
+              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+            </svg>
+          </div>
+          <div>
+            <p className="font-semibold text-gray-900">Your Coach: Courtney</p>
+            <p className="text-sm text-gray-600">Founder of EAwiz, AI & productivity expert</p>
+          </div>
         </div>
-        {!selectedCoach && (
-          <p className="mt-2 text-sm text-gray-500">
-            Please select a coach to continue.
-          </p>
-        )}
       </div>
 
       {/* Additional Notes */}
@@ -302,7 +255,6 @@ export function CoachingForm() {
           size="lg"
           className="w-full"
           isLoading={isSubmitting}
-          disabled={!selectedCoach}
         >
           {isSubmitting ? 'Redirecting to checkout...' : 'Continue to Payment'}
         </Button>

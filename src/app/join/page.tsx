@@ -21,15 +21,15 @@ type PlanType = 'monthly' | 'annual';
 const plans = {
   monthly: {
     name: 'Monthly',
-    price: 40,
+    price: 25,
     period: '/month',
     description: 'Flexible monthly billing',
   },
   annual: {
     name: 'Annual',
-    price: 400,
+    price: 250,
     period: '/year',
-    description: 'Save $80 vs monthly',
+    description: 'Save $50 vs monthly',
     savings: 'Save 17%',
   },
 };
@@ -45,8 +45,10 @@ const benefits = [
 export default function JoinPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [selectedPlan, setSelectedPlan] = useState<PlanType>('monthly');
+  const initialPlan = (searchParams.get('plan') as PlanType) || 'monthly';
+  const [selectedPlan, setSelectedPlan] = useState<PlanType>(initialPlan);
   const [email, setEmail] = useState('');
+  const [couponCode, setCouponCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
   const [message, setMessage] = useState<Msg>(null);
@@ -71,6 +73,14 @@ export default function JoinPage() {
     };
     checkAuth();
   }, [supabase]);
+
+  // Update selected plan from URL
+  useEffect(() => {
+    const planFromUrl = searchParams.get('plan') as PlanType;
+    if (planFromUrl && (planFromUrl === 'monthly' || planFromUrl === 'annual')) {
+      setSelectedPlan(planFromUrl);
+    }
+  }, [searchParams]);
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,7 +123,10 @@ export default function JoinPage() {
       const response = await fetch('/api/stripe/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan: selectedPlan }),
+        body: JSON.stringify({
+          plan: selectedPlan,
+          couponCode: couponCode.trim() || undefined,
+        }),
       });
 
       const data = await response.json();
@@ -262,8 +275,8 @@ export default function JoinPage() {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
               </div>
             ) : isLoggedIn ? (
-              <div className="text-center">
-                <p className="text-gray-600 mb-6">
+              <div className="max-w-md mx-auto">
+                <p className="text-center text-gray-600 mb-6">
                   You&apos;re logged in and ready to subscribe to the{' '}
                   <span className="font-semibold text-gray-900">
                     {plans[selectedPlan].name}
@@ -273,6 +286,20 @@ export default function JoinPage() {
                     ${plans[selectedPlan].price}{plans[selectedPlan].period}
                   </span>
                 </p>
+
+                {/* Coupon Code Field */}
+                <div className="mb-6">
+                  <label htmlFor="couponCode" className="block text-sm font-medium text-gray-700 mb-1">
+                    Coupon Code <span className="text-gray-400">(optional)</span>
+                  </label>
+                  <Input
+                    id="couponCode"
+                    type="text"
+                    placeholder="Enter coupon code"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value)}
+                  />
+                </div>
 
                 {message && (
                   <div
@@ -291,7 +318,7 @@ export default function JoinPage() {
                   variant="primary"
                   size="lg"
                   isLoading={isCheckoutLoading}
-                  className="w-full max-w-md"
+                  className="w-full"
                 >
                   Continue to Checkout
                 </Button>
@@ -325,6 +352,21 @@ export default function JoinPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
+                      disabled={isLoading}
+                    />
+                  </div>
+
+                  {/* Coupon Code Field (shown pre-login too) */}
+                  <div>
+                    <label htmlFor="couponCodePreLogin" className="block text-sm font-medium text-gray-700 mb-1">
+                      Coupon Code <span className="text-gray-400">(optional)</span>
+                    </label>
+                    <Input
+                      id="couponCodePreLogin"
+                      type="text"
+                      placeholder="Enter coupon code"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value)}
                       disabled={isLoading}
                     />
                   </div>

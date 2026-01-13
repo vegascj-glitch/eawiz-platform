@@ -42,12 +42,14 @@ const team = [
     role: 'Founder',
     bio: "Courtney is a seasoned Executive Assistant with over a decade of experience supporting C-suite executives at Fortune 500 companies. Her journey into AI began when she discovered how tools like ChatGPT could transform the daily workflow of administrative professionals.\n\nAfter years of developing her own AI-powered systems and sharing them with colleagues, Courtney founded EAwiz to bring these innovations to the broader EA community. She's passionate about helping Executive Assistants evolve from task managers to strategic partners through the power of AI.\n\nWhen she's not building tools or hosting AI for Admins sessions, Courtney enjoys mentoring aspiring EAs and speaking at industry conferences about the future of the profession.",
     imagePlaceholder: 'Courtney Headshot Placeholder',
+    linkedIn: 'https://www.linkedin.com/in/courtney-eawiz/',
   },
   {
     name: 'Molly',
     role: 'Co-Founder & Community Lead',
     bio: "Molly brings a unique blend of community building expertise and administrative excellence to EAwiz. With a background in operations management and a deep understanding of the challenges EAs face daily, she leads The EAwiz Lounge community with warmth and intention.\n\nHer vision for the community is simple: create a space where EAs can learn from each other, share wins and challenges, and grow together. Molly believes that the collective wisdom of experienced EAs is one of the profession's greatest untapped resources.\n\nAs Community Lead, Molly curates discussions, hosts virtual meetups, and ensures every member feels welcomed and supported. She's known for her ability to bring people together and create meaningful connections.",
     imagePlaceholder: 'Molly Headshot Placeholder',
+    linkedIn: 'https://www.linkedin.com/in/molly-eawiz/',
   },
 ];
 
@@ -156,7 +158,22 @@ export default function AboutPage() {
                 {/* Bio */}
                 <div className="flex-1">
                   <h3 className="text-2xl font-bold text-gray-900">{member.name}</h3>
-                  <p className="text-primary-600 font-medium mt-1">{member.role}</p>
+                  <div className="flex items-center gap-3 mt-1">
+                    <p className="text-primary-600 font-medium">{member.role}</p>
+                    {member.linkedIn && (
+                      <a
+                        href={member.linkedIn}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-gray-400 hover:text-[#0A66C2] transition-colors"
+                        aria-label={`${member.name}'s LinkedIn profile`}
+                      >
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                        </svg>
+                      </a>
+                    )}
+                  </div>
                   <div className="mt-4 prose prose-gray max-w-none">
                     {member.bio.split('\n\n').map((paragraph, i) => (
                       <p key={i} className="text-gray-600">
@@ -200,7 +217,7 @@ export default function AboutPage() {
               organizations.
             </p>
             <div className="mt-8">
-              <Link href="/speaking">
+              <Link href="/services/speaking">
                 <Button variant="primary" size="lg">
                   Book a Speaking Engagement
                 </Button>
@@ -222,7 +239,7 @@ export default function AboutPage() {
           <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/join">
               <Button variant="secondary" size="lg">
-                Join for $40/month
+                Join for $25/month
               </Button>
             </Link>
             <Link href="/tools">

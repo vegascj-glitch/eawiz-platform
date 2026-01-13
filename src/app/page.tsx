@@ -76,7 +76,7 @@ export default function HomePage() {
             <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/join">
                 <Button variant="secondary" size="lg">
-                  Join for $40/month
+                  Join for $25/month
                 </Button>
               </Link>
               <Link href="/tools">
@@ -124,6 +124,54 @@ export default function HomePage() {
                 </Card>
               </Link>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* AI for Admins Section */}
+      <section className="section bg-gradient-to-r from-accent-50 to-primary-50 border-y border-gray-200">
+        <div className="container">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12">
+              <div className="flex-shrink-0 text-center">
+                <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-white shadow-lg">
+                  <span className="text-5xl">🎙️</span>
+                </div>
+              </div>
+              <div className="flex-1 text-center md:text-left">
+                <div className="inline-block px-3 py-1 bg-accent-100 text-accent-700 text-sm font-medium rounded-full mb-4">
+                  Free Monthly Event
+                </div>
+                <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
+                  AI for Admins
+                </h2>
+                <p className="mt-3 text-lg text-gray-600">
+                  Join us the <strong>first Thursday of every month at 2pm ET</strong> for
+                  live AI training, demos, and Q&A. Free for everyone — members and
+                  non-members welcome!
+                </p>
+                <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
+                  <a
+                    href="https://us02web.zoom.us/j/81234567890"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button variant="primary">
+                      Join Zoom Meeting
+                      <span className="ml-2">↗</span>
+                    </Button>
+                  </a>
+                  <a href="/api/calendar/ai-for-admins.ics" download>
+                    <Button variant="outline">
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      Add to Calendar
+                    </Button>
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -232,7 +280,7 @@ export default function HomePage() {
           <div className="mt-10">
             <Link href="/join">
               <Button variant="secondary" size="lg">
-                Join for $40/month
+                Join for $25/month
               </Button>
             </Link>
             <p className="mt-4 text-sm text-primary-200">
