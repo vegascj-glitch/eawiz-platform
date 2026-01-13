@@ -1,16 +1,16 @@
 import { NextResponse } from 'next/server';
 
 // Generate a recurring .ics file for AI for Admins event
-// First Thursday of every month at 2pm ET
+// Third Friday of every month at 12:30pm ET (1 hour)
 export async function GET() {
   const now = new Date();
   const dtStamp = formatICSDate(now);
 
-  // Calculate next occurrence (first Thursday of next month if past this month's)
-  const nextEvent = getNextFirstThursday();
+  // Calculate next occurrence (third Friday of next month if past this month's)
+  const nextEvent = getNextThirdFriday();
   const dtStart = formatICSDate(nextEvent);
 
-  // Event ends 1 hour later
+  // Event ends 1 hour later (1:30pm ET)
   const endEvent = new Date(nextEvent);
   endEvent.setHours(endEvent.getHours() + 1);
   const dtEnd = formatICSDate(endEvent);
@@ -44,7 +44,7 @@ DTSTAMP:${dtStamp}
 UID:ai-for-admins@eawiz.com
 DTSTART;TZID=America/New_York:${dtStart}
 DTEND;TZID=America/New_York:${dtEnd}
-RRULE:FREQ=MONTHLY;BYDAY=1TH
+RRULE:FREQ=MONTHLY;BYDAY=3FR
 SUMMARY:AI for Admins - EAwiz
 DESCRIPTION:Join us for live AI training\\, demos\\, and Q&A with the EAwiz team. Free for everyone!\\n\\nZoom Link: https://us02web.zoom.us/j/81234567890\\n\\nLearn more at https://eawiz.com/events
 LOCATION:https://us02web.zoom.us/j/81234567890
@@ -74,35 +74,36 @@ function formatICSDate(date: Date): string {
   return `${year}${month}${day}T${hours}${minutes}${seconds}`;
 }
 
-function getNextFirstThursday(): Date {
+function getNextThirdFriday(): Date {
   const now = new Date();
   let year = now.getFullYear();
   let month = now.getMonth();
 
-  // Find first Thursday of current month
-  let firstThursday = getFirstThursdayOfMonth(year, month);
+  // Find third Friday of current month
+  let thirdFriday = getThirdFridayOfMonth(year, month);
 
-  // Set time to 2pm ET
-  firstThursday.setHours(14, 0, 0, 0);
+  // Set time to 12:30pm ET
+  thirdFriday.setHours(12, 30, 0, 0);
 
   // If past this month's event, get next month's
-  if (now > firstThursday) {
+  if (now > thirdFriday) {
     month++;
     if (month > 11) {
       month = 0;
       year++;
     }
-    firstThursday = getFirstThursdayOfMonth(year, month);
-    firstThursday.setHours(14, 0, 0, 0);
+    thirdFriday = getThirdFridayOfMonth(year, month);
+    thirdFriday.setHours(12, 30, 0, 0);
   }
 
-  return firstThursday;
+  return thirdFriday;
 }
 
-function getFirstThursdayOfMonth(year: number, month: number): Date {
+function getThirdFridayOfMonth(year: number, month: number): Date {
   const firstDay = new Date(year, month, 1);
   const dayOfWeek = firstDay.getDay();
-  // Thursday is day 4
-  const daysUntilThursday = (4 - dayOfWeek + 7) % 7;
-  return new Date(year, month, 1 + daysUntilThursday);
+  // Friday is day 5
+  const daysUntilFriday = (5 - dayOfWeek + 7) % 7;
+  // First Friday + 14 days = Third Friday
+  return new Date(year, month, 1 + daysUntilFriday + 14);
 }

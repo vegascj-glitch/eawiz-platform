@@ -145,7 +145,7 @@ export default function HomePage() {
                   AI for Admins
                 </h2>
                 <p className="mt-3 text-lg text-gray-600">
-                  Join us the <strong>first Thursday of every month at 2pm ET</strong> for
+                  Join us the <strong>third Friday of every month at 12:30pm ET</strong> for
                   live AI training, demos, and Q&A. Free for everyone — members and
                   non-members welcome!
                 </p>

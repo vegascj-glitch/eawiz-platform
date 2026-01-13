@@ -4,11 +4,19 @@ import type { Profile } from '@/types/database';
 import { cookies } from 'next/headers';
 
 export async function createServerSupabaseClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  // Return null if Supabase isn't configured (graceful fallback)
+  if (!supabaseUrl || !supabaseKey) {
+    return null;
+  }
+
   const cookieStore = await cookies();
 
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    supabaseKey,
     {
       cookies: {
         getAll() {
@@ -31,6 +39,12 @@ export async function createServerSupabaseClient() {
 
 export async function getProfile(): Promise<Profile | null> {
   const supabase = await createServerSupabaseClient();
+
+  // Return null if Supabase isn't configured
+  if (!supabase) {
+    return null;
+  }
+
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
