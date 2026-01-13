@@ -44,7 +44,7 @@ export default async function RootLayout({
   const profile = await getProfile();
 
   return (
-    <html lang="en" className={`${inter.variable} ${jakarta.variable}`} data-theme="midnight">
+    <html lang="en" className={`${inter.variable} ${jakarta.variable}`}>
       <body className={inter.className}>
         <ThemeProviderWrapper fontClasses={fontClasses}>
           <div className="min-h-screen flex flex-col">
