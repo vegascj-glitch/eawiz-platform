@@ -93,7 +93,7 @@ export default function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section className="section bg-white">
+      <section className="section" style={{ backgroundColor: 'rgb(var(--card))' }}>
         <div className="container">
           <div className="text-center max-w-2xl mx-auto">
             <h2 className="section-title">Everything You Need to Excel</h2>
@@ -176,7 +176,7 @@ export default function HomePage() {
       </section>
 
       {/* GPT Highlight Section */}
-      <section className="section bg-gray-50">
+      <section className="section" style={{ backgroundColor: 'rgb(var(--background))' }}>
         <div className="container">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
@@ -239,7 +239,7 @@ export default function HomePage() {
       </section>
 
       {/* Testimonials Section */}
-      <section className="section bg-white">
+      <section className="section" style={{ backgroundColor: 'rgb(var(--card))' }}>
         <div className="container">
           <div className="text-center max-w-2xl mx-auto">
             <h2 className="section-title">Loved by EAs Everywhere</h2>

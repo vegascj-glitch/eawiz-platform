@@ -58,7 +58,7 @@ export function Navbar({ user }: NavbarProps) {
   }, []);
 
   return (
-    <nav className="bg-white border-b border-gray-100 sticky top-0 z-50">
+    <nav className="sticky top-0 z-50 border-b" style={{ backgroundColor: 'rgb(var(--card))', borderColor: 'rgb(var(--border))' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
@@ -74,8 +74,9 @@ export function Navbar({ user }: NavbarProps) {
                     'inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 transition-colors',
                     isActive(link.href)
                       ? 'border-primary-600 text-primary-600'
-                      : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+                      : 'border-transparent hover:border-gray-300'
                   )}
+                  style={{ color: isActive(link.href) ? undefined : 'rgb(var(--muted-foreground))' }}
                 >
                   {link.label}
                 </Link>
@@ -89,8 +90,9 @@ export function Navbar({ user }: NavbarProps) {
                     'inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 transition-colors',
                     isServicesActive
                       ? 'border-primary-600 text-primary-600'
-                      : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+                      : 'border-transparent hover:border-gray-300'
                   )}
+                  style={{ color: isServicesActive ? undefined : 'rgb(var(--muted-foreground))' }}
                 >
                   Services
                   <svg
@@ -104,7 +106,7 @@ export function Navbar({ user }: NavbarProps) {
                 </button>
 
                 {servicesOpen && (
-                  <div className="absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
+                  <div className="absolute left-0 mt-2 w-56 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50" style={{ backgroundColor: 'rgb(var(--card))' }}>
                     <div className="py-1">
                       {servicesLinks.map((link) => (
                         <Link
@@ -114,8 +116,9 @@ export function Navbar({ user }: NavbarProps) {
                             'block px-4 py-2 text-sm',
                             isActive(link.href)
                               ? 'bg-primary-50 text-primary-700'
-                              : 'text-gray-700 hover:bg-gray-50'
+                              : 'hover:bg-gray-50/10'
                           )}
+                          style={{ color: isActive(link.href) ? undefined : 'rgb(var(--foreground))' }}
                           onClick={() => setServicesOpen(false)}
                         >
                           {link.label}

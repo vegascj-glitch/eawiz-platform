@@ -125,15 +125,11 @@ html[data-theme="pop"] {
     scroll-behavior: smooth;
   }
 
-  /* Apply theme variables when a theme is active */
-  html[data-theme] body {
+  /* Apply theme variables to body */
+  body {
     background-color: rgb(var(--background));
     color: rgb(var(--foreground));
-  }
-
-  /* Default styling (when no theme param) */
-  body {
-    @apply bg-gray-50 text-gray-900 antialiased;
+    @apply antialiased;
   }
 }
 
@@ -147,11 +143,13 @@ html[data-theme="pop"] {
   }
 
   .section-title {
-    @apply text-3xl md:text-4xl font-bold text-gray-900;
+    @apply text-3xl md:text-4xl font-bold;
+    color: rgb(var(--foreground));
   }
 
   .section-subtitle {
-    @apply text-lg text-gray-600 mt-4;
+    @apply text-lg mt-4;
+    color: rgb(var(--muted-foreground));
   }
 }
 
