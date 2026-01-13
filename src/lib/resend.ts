@@ -1,11 +1,23 @@
 import { Resend } from 'resend';
 
-export const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy initialization to avoid build-time errors when API key is not set
+let _resend: Resend | null = null;
+
+export function getResend(): Resend {
+  if (!_resend) {
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) {
+      throw new Error('RESEND_API_KEY is not set');
+    }
+    _resend = new Resend(apiKey);
+  }
+  return _resend;
+}
 
 const FROM_EMAIL = process.env.FROM_EMAIL || 'EAwiz <hello@eawiz.com>';
 
 export async function sendWelcomeEmail(email: string, firstName?: string) {
-  const { data, error } = await resend.emails.send({
+  const { data, error } = await getResend().emails.send({
     from: FROM_EMAIL,
     to: email,
     subject: 'Welcome to EAwiz!',
@@ -50,7 +62,7 @@ export async function sendLeadNotificationEmail(lead: {
 }) {
   const adminEmail = process.env.ADMIN_EMAIL || 'admin@eawiz.com';
 
-  const { data, error } = await resend.emails.send({
+  const { data, error } = await getResend().emails.send({
     from: FROM_EMAIL,
     to: adminEmail,
     subject: `New Lead: ${lead.leadType} from ${lead.source}`,
@@ -100,7 +112,7 @@ export async function sendLeadNotificationEmail(lead: {
 }
 
 export async function sendSpeakingInquiryConfirmation(email: string, firstName?: string) {
-  const { data, error } = await resend.emails.send({
+  const { data, error } = await getResend().emails.send({
     from: FROM_EMAIL,
     to: email,
     subject: 'Speaking Inquiry Received - EAwiz',

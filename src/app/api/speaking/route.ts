@@ -1,14 +1,16 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { resend } from '@/lib/resend';
+import { getResend } from '@/lib/resend';
 
 const ADMIN_NOTIFY_EMAIL = 'vegascj@gmail.com';
 
-// Use service role for API routes
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Lazy initialization to avoid build-time errors
+function getSupabaseAdmin() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 export async function POST(req: Request) {
   try {
@@ -51,7 +53,7 @@ export async function POST(req: Request) {
     }
 
     // Insert into leads table
-    const { error: dbError } = await supabaseAdmin.from('leads').insert({
+    const { error: dbError } = await getSupabaseAdmin().from('leads').insert({
       lead_type: 'speaking_inquiry',
       source: data.hearAbout || 'speaking_form',
       email: data.email,
@@ -83,7 +85,7 @@ export async function POST(req: Request) {
 
     // Send admin notification email
     try {
-      await resend.emails.send({
+      await getResend().emails.send({
         from: process.env.FROM_EMAIL || 'EAwiz <hello@eawiz.com>',
         to: ADMIN_NOTIFY_EMAIL,
         subject: `New Speaking Inquiry: ${data.eventName}`,
@@ -185,7 +187,7 @@ export async function POST(req: Request) {
 
     // Send confirmation email to requester
     try {
-      await resend.emails.send({
+      await getResend().emails.send({
         from: process.env.FROM_EMAIL || 'EAwiz <hello@eawiz.com>',
         to: data.email,
         subject: 'Speaking Inquiry Received - EAwiz',

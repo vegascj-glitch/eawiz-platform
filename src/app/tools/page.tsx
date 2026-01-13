@@ -192,6 +192,23 @@ const tools = [
     cta: 'Open Calendar Audit',
     external: false,
   },
+  {
+    name: 'Interview Tracker',
+    description:
+      'Track job applications and interview events in one place. Stay organized during your job search with a clean table view and detailed event tracking.',
+    features: [
+      'Track applications with company, role, and salary info',
+      'Log multiple interview events per application',
+      'See next scheduled interview at a glance',
+      'Filter and sort by status, work mode, and date',
+      'Track thank-you notes and interview outcomes',
+    ],
+    href: '/tools/interview-tracker',
+    badge: 'Free',
+    icon: '💼',
+    cta: 'Open Interview Tracker',
+    external: false,
+  },
 ];
 
 const comingSoon = [

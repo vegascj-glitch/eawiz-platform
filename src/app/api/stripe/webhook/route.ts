@@ -1,15 +1,17 @@
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import Stripe from 'stripe';
-import { stripe } from '@/lib/stripe';
+import { getStripe } from '@/lib/stripe';
 import { createClient } from '@supabase/supabase-js';
 import { sendWelcomeEmail } from '@/lib/resend';
 
-// Use service role for webhook to bypass RLS
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Lazy initialization to avoid build-time errors
+function getSupabaseAdmin() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 export async function POST(req: Request) {
   const body = await req.text();
@@ -19,7 +21,7 @@ export async function POST(req: Request) {
   let event: Stripe.Event;
 
   try {
-    event = stripe.webhooks.constructEvent(
+    event = getStripe().webhooks.constructEvent(
       body,
       signature,
       process.env.STRIPE_WEBHOOK_SECRET!
@@ -38,10 +40,10 @@ export async function POST(req: Request) {
 
         if (userId && subscriptionId) {
           // Fetch subscription details
-          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+          const subscription = await getStripe().subscriptions.retrieve(subscriptionId);
 
           // Update user profile
-          const { data: profile, error } = await supabaseAdmin
+          const { data: profile, error } = await getSupabaseAdmin()
             .from('profiles')
             .update({
               subscription_status: 'active',
@@ -80,7 +82,7 @@ export async function POST(req: Request) {
               ? 'canceled'
               : 'none';
 
-          await supabaseAdmin
+          await getSupabaseAdmin()
             .from('profiles')
             .update({
               subscription_status: status,
@@ -98,7 +100,7 @@ export async function POST(req: Request) {
         const userId = subscription.metadata?.userId;
 
         if (userId) {
-          await supabaseAdmin
+          await getSupabaseAdmin()
             .from('profiles')
             .update({
               subscription_status: 'canceled',
@@ -116,11 +118,11 @@ export async function POST(req: Request) {
         const subscriptionId = invoice.subscription as string;
 
         if (subscriptionId) {
-          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+          const subscription = await getStripe().subscriptions.retrieve(subscriptionId);
           const userId = subscription.metadata?.userId;
 
           if (userId) {
-            await supabaseAdmin
+            await getSupabaseAdmin()
               .from('profiles')
               .update({
                 subscription_status: 'past_due',

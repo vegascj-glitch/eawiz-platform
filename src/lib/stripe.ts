@@ -1,9 +1,21 @@
 import Stripe from 'stripe';
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-02-24.acacia',
-  typescript: true,
-});
+// Lazy initialization to avoid build-time errors when API key is not set
+let _stripe: Stripe | null = null;
+
+export function getStripe(): Stripe {
+  if (!_stripe) {
+    const apiKey = process.env.STRIPE_SECRET_KEY;
+    if (!apiKey) {
+      throw new Error('STRIPE_SECRET_KEY is not set');
+    }
+    _stripe = new Stripe(apiKey, {
+      apiVersion: '2025-02-24.acacia',
+      typescript: true,
+    });
+  }
+  return _stripe;
+}
 
 export const PRICE_ID_MONTHLY = process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_MONTHLY!;
 export const PRICE_ID_ANNUAL = process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_ANNUAL!;
@@ -24,7 +36,7 @@ export async function createCheckoutSession(
 ) {
   const priceId = getPriceId(plan);
 
-  const session = await stripe.checkout.sessions.create({
+  const session = await getStripe().checkout.sessions.create({
     customer: customerId,
     customer_email: customerId ? undefined : email,
     line_items: [
@@ -52,7 +64,7 @@ export async function createCheckoutSession(
 }
 
 export async function createCustomerPortalSession(customerId: string) {
-  const session = await stripe.billingPortal.sessions.create({
+  const session = await getStripe().billingPortal.sessions.create({
     customer: customerId,
     return_url: `${process.env.NEXT_PUBLIC_APP_URL}/account`,
   });
@@ -61,7 +73,7 @@ export async function createCustomerPortalSession(customerId: string) {
 }
 
 export async function getOrCreateCustomer(email: string, name?: string) {
-  const existingCustomers = await stripe.customers.list({
+  const existingCustomers = await getStripe().customers.list({
     email,
     limit: 1,
   });
@@ -70,7 +82,7 @@ export async function getOrCreateCustomer(email: string, name?: string) {
     return existingCustomers.data[0];
   }
 
-  const customer = await stripe.customers.create({
+  const customer = await getStripe().customers.create({
     email,
     name,
   });
@@ -79,11 +91,11 @@ export async function getOrCreateCustomer(email: string, name?: string) {
 }
 
 export async function cancelSubscription(subscriptionId: string) {
-  const subscription = await stripe.subscriptions.cancel(subscriptionId);
+  const subscription = await getStripe().subscriptions.cancel(subscriptionId);
   return subscription;
 }
 
 export async function getSubscription(subscriptionId: string) {
-  const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+  const subscription = await getStripe().subscriptions.retrieve(subscriptionId);
   return subscription;
 }

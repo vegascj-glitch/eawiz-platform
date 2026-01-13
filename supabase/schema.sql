@@ -427,3 +427,115 @@ CREATE INDEX idx_calendar_categories_user ON calendar_categories(user_id);
 CREATE INDEX idx_calendar_rules_user ON calendar_category_rules(user_id);
 CREATE INDEX idx_calendar_classifications_user ON calendar_meeting_classifications(user_id);
 CREATE INDEX idx_calendar_classifications_start ON calendar_meeting_classifications(start_time);
+
+-- ===========================================
+-- INTERVIEW TRACKER: APPLICATIONS TABLE
+-- ===========================================
+CREATE TABLE interview_applications (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  company_name TEXT NOT NULL,
+  role_title TEXT NOT NULL,
+  employment_type TEXT CHECK (employment_type IN ('full_time', 'contract', 'temp', 'part_time', 'intern')),
+  work_mode TEXT CHECK (work_mode IN ('remote', 'hybrid', 'in_office')),
+  company_address TEXT,
+  job_url TEXT,
+  job_description TEXT,
+  salary_min INTEGER,
+  salary_max INTEGER,
+  salary_notes TEXT,
+  recruiting_firm TEXT,
+  recruiter_name TEXT,
+  recruiter_email TEXT,
+  recruiter_phone TEXT,
+  pipeline_status TEXT DEFAULT 'saved' CHECK (pipeline_status IN ('saved', 'applied', 'screening', 'interviewing', 'offer', 'rejected', 'withdrawn')),
+  overall_notes TEXT,
+  internal_tags TEXT[],
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ===========================================
+-- INTERVIEW TRACKER: EVENTS TABLE
+-- ===========================================
+CREATE TABLE interview_events (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  application_id UUID NOT NULL REFERENCES interview_applications(id) ON DELETE CASCADE,
+  event_type TEXT CHECK (event_type IN ('screen', 'phone', 'video', 'onsite', 'assessment', 'final', 'other')),
+  event_title TEXT,
+  scheduled_at TIMESTAMPTZ,
+  duration_minutes INTEGER,
+  timezone TEXT,
+  interviewer_names TEXT,
+  location_or_link TEXT,
+  status TEXT DEFAULT 'scheduled' CHECK (status IN ('scheduled', 'completed', 'canceled', 'rescheduled')),
+  outcome TEXT DEFAULT 'pending' CHECK (outcome IN ('pending', 'passed', 'failed', 'unknown')),
+  notes TEXT,
+  thank_you_sent BOOLEAN DEFAULT FALSE,
+  thank_you_sent_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- INTERVIEW TRACKER INDEXES
+CREATE INDEX idx_interview_applications_user ON interview_applications(user_id);
+CREATE INDEX idx_interview_applications_status ON interview_applications(pipeline_status);
+CREATE INDEX idx_interview_events_user ON interview_events(user_id);
+CREATE INDEX idx_interview_events_application ON interview_events(application_id);
+CREATE INDEX idx_interview_events_scheduled ON interview_events(scheduled_at);
+
+-- INTERVIEW TRACKER UPDATE TRIGGERS
+CREATE OR REPLACE FUNCTION update_interview_applications_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_interview_applications_updated
+  BEFORE UPDATE ON interview_applications
+  FOR EACH ROW EXECUTE FUNCTION update_interview_applications_updated_at();
+
+CREATE OR REPLACE FUNCTION update_interview_events_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_interview_events_updated
+  BEFORE UPDATE ON interview_events
+  FOR EACH ROW EXECUTE FUNCTION update_interview_events_updated_at();
+
+-- ENABLE RLS ON INTERVIEW TRACKER TABLES
+ALTER TABLE interview_applications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE interview_events ENABLE ROW LEVEL SECURITY;
+
+-- INTERVIEW APPLICATIONS RLS POLICIES
+CREATE POLICY "Users can view own applications" ON interview_applications
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own applications" ON interview_applications
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own applications" ON interview_applications
+  FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own applications" ON interview_applications
+  FOR DELETE USING (auth.uid() = user_id);
+
+-- INTERVIEW EVENTS RLS POLICIES
+CREATE POLICY "Users can view own events" ON interview_events
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own events" ON interview_events
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own events" ON interview_events
+  FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own events" ON interview_events
+  FOR DELETE USING (auth.uid() = user_id);
