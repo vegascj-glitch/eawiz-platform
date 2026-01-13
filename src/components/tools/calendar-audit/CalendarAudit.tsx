@@ -151,63 +151,111 @@ function parseCSV(content: string): Meeting[] {
   return meetings;
 }
 
-// Parse pasted text (simple format)
-function parsePastedText(content: string): Meeting[] {
-  const lines = content.split('\n').filter(line => line.trim());
+// Parse ICS file content (Google Calendar export)
+function parseICS(content: string): Meeting[] {
   const meetings: Meeting[] = [];
+  const events = content.split('BEGIN:VEVENT');
 
-  for (const line of lines) {
-    // Expected format: Title | Duration (min) | Attendees
-    // Or: Title | Start | End
-    const parts = line.split('|').map(p => p.trim());
-    if (parts.length < 2) continue;
+  for (let i = 1; i < events.length; i++) {
+    try {
+      const event = events[i];
+      const endIdx = event.indexOf('END:VEVENT');
+      const eventContent = endIdx >= 0 ? event.substring(0, endIdx) : event;
 
-    const title = parts[0];
-    let duration_minutes = 30;
-    let attendee_count = 0;
-    let start_time = new Date();
-    let end_time = new Date();
+      // Extract fields - handle line folding (lines starting with space are continuations)
+      const unfoldedContent = eventContent.replace(/\r?\n[ \t]/g, '');
+      const lines = unfoldedContent.split(/\r?\n/);
 
-    // Try to parse duration or dates
-    const secondPart = parts[1];
-    const durationMatch = secondPart.match(/^(\d+)\s*(m|min|mins|minutes)?$/i);
+      let title = '';
+      let dtstart = '';
+      let dtend = '';
+      let attendees: string[] = [];
 
-    if (durationMatch) {
-      duration_minutes = parseInt(durationMatch[1], 10);
-      end_time = new Date(start_time.getTime() + duration_minutes * 60000);
-    } else {
-      // Try as date
-      const parsed = new Date(secondPart);
-      if (!isNaN(parsed.getTime())) {
-        start_time = parsed;
-        if (parts[2]) {
-          const endParsed = new Date(parts[2]);
-          if (!isNaN(endParsed.getTime())) {
-            end_time = endParsed;
-            duration_minutes = Math.round((end_time.getTime() - start_time.getTime()) / 60000);
+      for (const line of lines) {
+        if (line.startsWith('SUMMARY:')) {
+          title = line.substring(8).replace(/\\,/g, ',').replace(/\\;/g, ';').replace(/\\n/g, '\n').trim();
+        } else if (line.startsWith('DTSTART')) {
+          // Handle both DTSTART:20240115T090000Z and DTSTART;TZID=America/New_York:20240115T090000
+          const colonIdx = line.indexOf(':');
+          if (colonIdx >= 0) {
+            dtstart = line.substring(colonIdx + 1).trim();
+          }
+        } else if (line.startsWith('DTEND')) {
+          const colonIdx = line.indexOf(':');
+          if (colonIdx >= 0) {
+            dtend = line.substring(colonIdx + 1).trim();
+          }
+        } else if (line.startsWith('ATTENDEE')) {
+          // Extract email from ATTENDEE;...mailto:email@example.com
+          const mailtoMatch = line.match(/mailto:([^\s;]+)/i);
+          if (mailtoMatch) {
+            attendees.push(mailtoMatch[1]);
           }
         }
       }
-    }
 
-    // Parse attendee count if present
-    if (parts[2] && !isNaN(parseInt(parts[2], 10))) {
-      attendee_count = parseInt(parts[2], 10);
-    }
+      if (!title || !dtstart) continue;
 
-    if (title) {
+      // Parse ICS date format: 20240115T090000Z or 20240115T090000 or 20240115 (all-day)
+      const parseICSDate = (dateStr: string): Date => {
+        // Remove any trailing Z for UTC (we'll handle timezone simply)
+        const clean = dateStr.replace('Z', '');
+
+        if (clean.length === 8) {
+          // All-day event: YYYYMMDD
+          const year = parseInt(clean.substring(0, 4), 10);
+          const month = parseInt(clean.substring(4, 6), 10) - 1;
+          const day = parseInt(clean.substring(6, 8), 10);
+          return new Date(year, month, day, 0, 0, 0);
+        } else if (clean.length >= 15) {
+          // DateTime: YYYYMMDDTHHmmss
+          const year = parseInt(clean.substring(0, 4), 10);
+          const month = parseInt(clean.substring(4, 6), 10) - 1;
+          const day = parseInt(clean.substring(6, 8), 10);
+          const hour = parseInt(clean.substring(9, 11), 10);
+          const minute = parseInt(clean.substring(11, 13), 10);
+          const second = parseInt(clean.substring(13, 15), 10);
+          return new Date(year, month, day, hour, minute, second);
+        }
+        return new Date(dateStr);
+      };
+
+      const start_time = parseICSDate(dtstart);
+      const end_time = dtend ? parseICSDate(dtend) : new Date(start_time.getTime() + 30 * 60000);
+
+      if (isNaN(start_time.getTime())) continue;
+
+      const duration_minutes = Math.round((end_time.getTime() - start_time.getTime()) / 60000);
+
       meetings.push({
         id: generateId(),
         title,
         start_time,
         end_time,
         duration_minutes: duration_minutes > 0 ? duration_minutes : 30,
-        attendee_count,
+        attendee_count: attendees.length,
+        attendees,
       });
+    } catch {
+      continue;
     }
   }
 
   return meetings;
+}
+
+// Check if meeting is all-day (duration >= 24 hours or starts at midnight and spans full day)
+function isAllDayEvent(meeting: Meeting): boolean {
+  // If duration is 24 hours or more, it's all-day
+  if (meeting.duration_minutes >= 24 * 60) return true;
+
+  // Check if it starts at midnight and is 24h (common ICS pattern for all-day)
+  const start = new Date(meeting.start_time);
+  if (start.getHours() === 0 && start.getMinutes() === 0 && meeting.duration_minutes === 24 * 60) {
+    return true;
+  }
+
+  return false;
 }
 
 // Auto-categorization heuristics
@@ -291,9 +339,13 @@ export function CalendarAudit() {
   });
   const [rules, setRules] = useState<CategoryRule[]>([]);
   const [dateRange, setDateRange] = useState<DateRange>(getDefaultDateRange);
-  const [pasteContent, setPasteContent] = useState('');
-  const [inputMode, setInputMode] = useState<'paste' | 'upload'>('paste');
   const [copied, setCopied] = useState<string | null>(null);
+  // Filter states
+  const [excludeAllDay, setExcludeAllDay] = useState(true);
+  const [minDuration, setMinDuration] = useState(0);
+  const [excludeKeywords, setExcludeKeywords] = useState('');
+  // Export instructions accordion
+  const [showExportInstructions, setShowExportInstructions] = useState(false);
   const [showRangeWarning, setShowRangeWarning] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [showRuleModal, setShowRuleModal] = useState(false);
@@ -345,17 +397,40 @@ export function CalendarAudit() {
     loadRules();
   }, []);
 
-  // Filter meetings by date range
+  // Filter meetings by date range and additional filters
   const filteredMeetings = useMemo(() => {
     const startDate = new Date(dateRange.start);
     const endDate = new Date(dateRange.end);
     endDate.setHours(23, 59, 59, 999);
 
+    // Parse exclude keywords
+    const keywordsList = excludeKeywords
+      .split(',')
+      .map(k => k.trim().toLowerCase())
+      .filter(k => k.length > 0);
+
     return meetings.filter(m => {
+      // 1. Date range filter
       const meetingDate = new Date(m.start_time);
-      return meetingDate >= startDate && meetingDate <= endDate;
+      if (meetingDate < startDate || meetingDate > endDate) return false;
+
+      // 2. Exclude all-day events
+      if (excludeAllDay && isAllDayEvent(m)) return false;
+
+      // 3. Minimum duration filter
+      if (m.duration_minutes < minDuration) return false;
+
+      // 4. Exclude keywords filter
+      if (keywordsList.length > 0) {
+        const titleLower = m.title.toLowerCase();
+        if (keywordsList.some(keyword => titleLower.includes(keyword))) {
+          return false;
+        }
+      }
+
+      return true;
     });
-  }, [meetings, dateRange]);
+  }, [meetings, dateRange, excludeAllDay, minDuration, excludeKeywords]);
 
   // Categorized meetings
   const categorizedMeetings = useMemo(() => {
@@ -457,26 +532,7 @@ export function CalendarAudit() {
     });
   }, []);
 
-  // Import meetings
-  const handleImport = useCallback(() => {
-    let imported: Meeting[] = [];
-
-    if (inputMode === 'paste' && pasteContent.trim()) {
-      // Try CSV first
-      imported = parseCSV(pasteContent);
-      if (imported.length === 0) {
-        // Fall back to simple format
-        imported = parsePastedText(pasteContent);
-      }
-    }
-
-    if (imported.length > 0) {
-      setMeetings(prev => [...prev, ...imported]);
-      setPasteContent('');
-    }
-  }, [inputMode, pasteContent]);
-
-  // Handle file upload
+  // Handle file upload (CSV for Outlook, ICS for Google Calendar)
   const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -485,7 +541,16 @@ export function CalendarAudit() {
     reader.onload = (event) => {
       const content = event.target?.result as string;
       if (content) {
-        const imported = parseCSV(content);
+        let imported: Meeting[] = [];
+
+        // Determine file type by extension or content
+        const fileName = file.name.toLowerCase();
+        if (fileName.endsWith('.ics') || content.includes('BEGIN:VCALENDAR')) {
+          imported = parseICS(content);
+        } else {
+          imported = parseCSV(content);
+        }
+
         if (imported.length > 0) {
           setMeetings(prev => [...prev, ...imported]);
         }
@@ -627,6 +692,76 @@ export function CalendarAudit() {
 
   return (
     <div className="space-y-6">
+      {/* Export Instructions Accordion */}
+      <Card variant="bordered">
+        <button
+          onClick={() => setShowExportInstructions(!showExportInstructions)}
+          className="w-full px-6 py-4 flex items-center justify-between text-left"
+        >
+          <div className="flex items-center gap-2">
+            <svg className="w-5 h-5 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="text-lg font-semibold text-gray-900">How to Export Your Calendar</span>
+          </div>
+          <svg
+            className={cn('w-5 h-5 text-gray-500 transition-transform', showExportInstructions && 'rotate-180')}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        {showExportInstructions && (
+          <CardContent className="pt-0 pb-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Outlook Instructions */}
+              <div className="bg-blue-50 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <svg className="w-6 h-6 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M7.88 12.04q0 .45-.11.87-.1.41-.33.74-.22.33-.58.52-.37.2-.87.2t-.85-.2q-.35-.21-.57-.55-.22-.33-.33-.75-.1-.42-.1-.86t.1-.87q.1-.43.34-.76.22-.34.59-.54.36-.2.87-.2t.86.2q.35.21.57.55.22.34.31.77.1.43.1.88zM24 12v9.38q0 .46-.33.8-.33.32-.8.32H7.13q-.46 0-.8-.33-.32-.33-.32-.8V18H1q-.41 0-.7-.3-.3-.29-.3-.7V7q0-.41.3-.7Q.58 6 1 6h6.01V2.38q0-.46.33-.8.33-.32.8-.32h14.49q.46 0 .79.33.33.33.33.8zM17.38 6h-6.38v6.38q0 .41-.3.7-.29.3-.7.3H6v4.62h11.38zM7.5 2.62v3.38h2.75V4.5h.875v1.5h.875V2.62zm6.5 5.88h-5v5h5z"/>
+                  </svg>
+                  <h4 className="font-semibold text-blue-900">Microsoft Outlook</h4>
+                </div>
+                <ol className="text-sm text-blue-800 space-y-2 list-decimal list-inside">
+                  <li>Open Outlook and go to <strong>File</strong></li>
+                  <li>Click <strong>Open & Export</strong></li>
+                  <li>Select <strong>Import/Export</strong></li>
+                  <li>Choose <strong>Export to a file</strong></li>
+                  <li>Select <strong>Comma Separated Values (CSV)</strong></li>
+                  <li>Select your <strong>Calendar</strong> folder</li>
+                  <li>Choose a save location and click <strong>Finish</strong></li>
+                </ol>
+                <p className="mt-3 text-xs text-blue-600">Exports as .csv file</p>
+              </div>
+
+              {/* Google Calendar Instructions */}
+              <div className="bg-green-50 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <svg className="w-6 h-6 text-green-600" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19.5 22h-15A2.5 2.5 0 012 19.5v-15A2.5 2.5 0 014.5 2H9v2H4.5a.5.5 0 00-.5.5v15a.5.5 0 00.5.5h15a.5.5 0 00.5-.5V15h2v4.5a2.5 2.5 0 01-2.5 2.5z"/>
+                    <path d="M18 2v4h4v2h-6V2h2z"/>
+                    <path d="M21 8l-6-6v6h6z"/>
+                    <path d="M8 12h8v2H8zM8 16h6v2H8z"/>
+                  </svg>
+                  <h4 className="font-semibold text-green-900">Google Calendar</h4>
+                </div>
+                <ol className="text-sm text-green-800 space-y-2 list-decimal list-inside">
+                  <li>Go to <strong>calendar.google.com</strong></li>
+                  <li>Click the <strong>gear icon</strong> → <strong>Settings</strong></li>
+                  <li>Under <strong>Import & export</strong>, click <strong>Export</strong></li>
+                  <li>Click <strong>Export</strong> to download a .zip file</li>
+                  <li>Extract the .zip to find your <strong>.ics</strong> file(s)</li>
+                  <li>Upload the .ics file here</li>
+                </ol>
+                <p className="mt-3 text-xs text-green-600">Exports as .ics file</p>
+              </div>
+            </div>
+          </CardContent>
+        )}
+      </Card>
+
       {/* Date Range Filter */}
       <Card variant="bordered">
         <CardHeader>
@@ -682,73 +817,94 @@ export function CalendarAudit() {
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Panel - Import */}
+        {/* Left Panel - Import & Filters */}
         <div className="lg:col-span-4 space-y-4">
+          {/* Upload File */}
           <Card variant="bordered">
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">Import Meetings</CardTitle>
-                <div className="flex gap-1">
-                  <button
-                    onClick={() => setInputMode('paste')}
-                    className={cn(
-                      'px-2 py-1 text-xs rounded transition-colors',
-                      inputMode === 'paste'
-                        ? 'bg-primary-600 text-white'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    )}
-                  >
-                    Paste
-                  </button>
-                  <button
-                    onClick={() => setInputMode('upload')}
-                    className={cn(
-                      'px-2 py-1 text-xs rounded transition-colors',
-                      inputMode === 'upload'
-                        ? 'bg-primary-600 text-white'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    )}
-                  >
-                    Upload
-                  </button>
-                </div>
-              </div>
+              <CardTitle className="text-lg">Import Meetings</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {inputMode === 'paste' ? (
-                <>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
-                      Paste Calendar Data (CSV or Title | Duration | Attendees)
-                    </label>
-                    <textarea
-                      value={pasteContent}
-                      onChange={(e) => setPasteContent(e.target.value)}
-                      placeholder={`Subject,Start Date,End Date,Required Attendees\nTeam Standup,2024-01-15 09:00,2024-01-15 09:30,john@co.com\n\nOr simple format:\nTeam Standup | 30 | 5\n1:1 with John | 30 | 2`}
-                      rows={8}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 font-mono"
-                    />
-                  </div>
-                  <Button variant="primary" size="sm" onClick={handleImport} className="w-full">
-                    Import Meetings
-                  </Button>
-                </>
-              ) : (
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                    Upload CSV (Outlook/Google Calendar export)
-                  </label>
-                  <input
-                    type="file"
-                    accept=".csv"
-                    onChange={handleFileUpload}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Upload Calendar Export
+                </label>
+                <input
+                  type="file"
+                  accept=".csv,.ics"
+                  onChange={handleFileUpload}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
+                />
+                <p className="mt-2 text-xs text-gray-500">
+                  Supports <strong>.csv</strong> (Outlook) and <strong>.ics</strong> (Google Calendar)
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Filters Panel */}
+          <Card variant="bordered">
+            <CardHeader>
+              <CardTitle className="text-lg">Filters</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Exclude All-Day Events */}
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium text-gray-700">Exclude all-day events</label>
+                <button
+                  onClick={() => setExcludeAllDay(!excludeAllDay)}
+                  className={cn(
+                    'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
+                    excludeAllDay ? 'bg-primary-600' : 'bg-gray-200'
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
+                      excludeAllDay ? 'translate-x-6' : 'translate-x-1'
+                    )}
                   />
-                  <p className="mt-2 text-xs text-gray-500">
-                    Export from Outlook: File → Open & Export → Import/Export → Export to a file → CSV
-                  </p>
+                </button>
+              </div>
+
+              {/* Minimum Duration Slider */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm font-medium text-gray-700">Minimum duration</label>
+                  <span className="text-sm text-gray-500">{minDuration} min</span>
                 </div>
-              )}
+                <input
+                  type="range"
+                  min="0"
+                  max="240"
+                  step="15"
+                  value={minDuration}
+                  onChange={(e) => setMinDuration(parseInt(e.target.value, 10))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary-600"
+                />
+                <div className="flex justify-between text-xs text-gray-400 mt-1">
+                  <span>0</span>
+                  <span>60</span>
+                  <span>120</span>
+                  <span>180</span>
+                  <span>240</span>
+                </div>
+              </div>
+
+              {/* Exclude Keywords */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Exclude by keywords
+                </label>
+                <input
+                  type="text"
+                  value={excludeKeywords}
+                  onChange={(e) => setExcludeKeywords(e.target.value)}
+                  placeholder="lunch, blocked, hold"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500"
+                />
+                <p className="mt-1 text-xs text-gray-500">Comma-separated list of keywords to exclude</p>
+              </div>
             </CardContent>
           </Card>
 
