@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 // Generate a recurring .ics file for AI for Admins event
-// Third Friday of every month at 12:30pm ET (1 hour)
+// Third Friday of every month at 12:00pm ET (1 hour)
 export async function GET() {
   const now = new Date();
   const dtStamp = formatICSDate(now);
@@ -10,7 +10,7 @@ export async function GET() {
   const nextEvent = getNextThirdFriday();
   const dtStart = formatICSDate(nextEvent);
 
-  // Event ends 1 hour later (1:30pm ET)
+  // Event ends 1 hour later (1:00pm ET)
   const endEvent = new Date(nextEvent);
   endEvent.setHours(endEvent.getHours() + 1);
   const dtEnd = formatICSDate(endEvent);
@@ -82,8 +82,8 @@ function getNextThirdFriday(): Date {
   // Find third Friday of current month
   let thirdFriday = getThirdFridayOfMonth(year, month);
 
-  // Set time to 12:30pm ET
-  thirdFriday.setHours(12, 30, 0, 0);
+  // Set time to 12:00pm ET
+  thirdFriday.setHours(12, 0, 0, 0);
 
   // If past this month's event, get next month's
   if (now > thirdFriday) {
@@ -93,7 +93,7 @@ function getNextThirdFriday(): Date {
       year++;
     }
     thirdFriday = getThirdFridayOfMonth(year, month);
-    thirdFriday.setHours(12, 30, 0, 0);
+    thirdFriday.setHours(12, 0, 0, 0);
   }
 
   return thirdFriday;
