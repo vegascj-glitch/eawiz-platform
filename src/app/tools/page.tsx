@@ -69,6 +69,22 @@ const freeTools = [
     cta: 'Browse Prompt Library',
     external: false,
   },
+  {
+    name: 'Thank You Letter Generator',
+    description:
+      'Write a human-sounding post-interview thank you note using your resume and interview notes. No AI API needed.',
+    features: [
+      'Reference specific interview discussion points',
+      'Multiple tones: formal, warm, direct, enthusiastic',
+      'Adjustable length: short, standard, detailed',
+      'Detects and warns about cliche phrases',
+      'Export to .txt or .docx',
+    ],
+    href: '/tools/thank-you-letter',
+    icon: '✉️',
+    cta: 'Open Thank You Letter Generator',
+    external: false,
+  },
 ];
 
 const memberTools = [
