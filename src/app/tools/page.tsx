@@ -73,6 +73,21 @@ const freeTools = [
 
 const memberTools = [
   {
+    name: 'Executive Profile',
+    description:
+      'A comprehensive executive preference and operations profile covering contacts, vendors, documents, travel, calendar, and protocols.',
+    features: [
+      '16 sections: personal, travel, meetings, health, family, and more',
+      'Contact, vendor, and document registries with editable tables',
+      'Travel preferences, meeting protocols, work style notes',
+      'Autosave with cloud sync and local backup',
+      'Export and import JSON for backup',
+    ],
+    href: '/tools/executive-profile',
+    icon: '👤',
+    cta: 'Open Executive Profile',
+  },
+  {
     name: 'Availability Grid',
     description:
       'Select meeting times across time zones and generate a ready-to-send email with professional formatting.',
