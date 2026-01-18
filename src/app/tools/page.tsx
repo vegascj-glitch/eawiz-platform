@@ -73,6 +73,21 @@ const freeTools = [
 
 const memberTools = [
   {
+    name: 'Charitable Deductions Calculator 2025',
+    description:
+      'Estimate fair market value for donated items using consistent excellent condition rules. Export CSV and copy a TurboTax-friendly summary.',
+    features: [
+      'Category-based item catalog with search and totals',
+      'Excellent condition logic: range-high, plus-min, fixed',
+      'CSV export (only items with quantity > 0)',
+      'Copy TurboTax summary and category totals',
+      'Autosave and restore your entries',
+    ],
+    href: '/tools/charitable-deductions-calculator-2025',
+    icon: '🧾',
+    cta: 'Open Deductions Calculator',
+  },
+  {
     name: 'Task Tracker',
     description:
       'A lightweight task management tool with dashboard metrics, sortable task tables, and weekly time-block planner designed for executive assistants.',
