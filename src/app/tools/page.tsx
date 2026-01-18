@@ -73,6 +73,21 @@ const freeTools = [
 
 const memberTools = [
   {
+    name: 'Task Tracker',
+    description:
+      'A lightweight task management tool with dashboard metrics, sortable task tables, and weekly time-block planner designed for executive assistants.',
+    features: [
+      'Dashboard with KPIs, completion trends, and impact metrics',
+      'Full task table with filtering, sorting, and bulk actions',
+      'Weekly planner with drag-and-drop time-block scheduling',
+      'Color-coded categories, priorities, and statuses',
+      'CSV export and weekly summary copy for reporting',
+    ],
+    href: '/tools/task-tracker',
+    icon: '📋',
+    cta: 'Open Task Tracker',
+  },
+  {
     name: 'Executive Profile',
     description:
       'A comprehensive executive preference and operations profile covering contacts, vendors, documents, travel, calendar, and protocols.',

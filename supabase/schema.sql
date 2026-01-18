@@ -539,3 +539,136 @@ CREATE POLICY "Users can update own events" ON interview_events
 
 CREATE POLICY "Users can delete own events" ON interview_events
   FOR DELETE USING (auth.uid() = user_id);
+
+-- ===========================================
+-- TASK TRACKER: CATEGORIES TABLE
+-- ===========================================
+CREATE TABLE task_categories (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  color_key TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id, name)
+);
+
+-- ===========================================
+-- TASK TRACKER: TASKS TABLE
+-- ===========================================
+CREATE TABLE tasks (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  description TEXT,
+  category_id UUID REFERENCES task_categories(id) ON DELETE SET NULL,
+  priority TEXT NOT NULL DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high', 'urgent')),
+  status TEXT NOT NULL DEFAULT 'not_started' CHECK (status IN ('not_started', 'in_progress', 'blocked', 'waiting', 'done')),
+  due_date DATE,
+  estimate_minutes INTEGER,
+  actual_minutes INTEGER,
+  completed_at TIMESTAMPTZ,
+  recurring_rule TEXT DEFAULT 'none' CHECK (recurring_rule IN ('none', 'daily', 'weekly', 'monthly')),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ===========================================
+-- TASK TRACKER: SCHEDULES TABLE
+-- ===========================================
+CREATE TABLE task_schedules (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  task_id UUID NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+  scheduled_date DATE NOT NULL,
+  start_time TIME NOT NULL,
+  end_time TIME NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ===========================================
+-- TASK TRACKER: SETTINGS TABLE
+-- ===========================================
+CREATE TABLE task_settings (
+  user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  workday_start TIME DEFAULT '07:00',
+  workday_end TIME DEFAULT '19:00',
+  baseline_hours_per_week NUMERIC DEFAULT 5,
+  efficiency_factor NUMERIC DEFAULT 0.15,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- TASK TRACKER UPDATE TRIGGER
+CREATE OR REPLACE FUNCTION update_tasks_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_tasks_updated
+  BEFORE UPDATE ON tasks
+  FOR EACH ROW EXECUTE FUNCTION update_tasks_updated_at();
+
+-- ENABLE RLS ON TASK TRACKER TABLES
+ALTER TABLE task_categories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE tasks ENABLE ROW LEVEL SECURITY;
+ALTER TABLE task_schedules ENABLE ROW LEVEL SECURITY;
+ALTER TABLE task_settings ENABLE ROW LEVEL SECURITY;
+
+-- TASK CATEGORIES RLS POLICIES
+CREATE POLICY "Users can view own task categories" ON task_categories
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own task categories" ON task_categories
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own task categories" ON task_categories
+  FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own task categories" ON task_categories
+  FOR DELETE USING (auth.uid() = user_id);
+
+-- TASKS RLS POLICIES
+CREATE POLICY "Users can view own tasks" ON tasks
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own tasks" ON tasks
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own tasks" ON tasks
+  FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own tasks" ON tasks
+  FOR DELETE USING (auth.uid() = user_id);
+
+-- TASK SCHEDULES RLS POLICIES
+CREATE POLICY "Users can view own task schedules" ON task_schedules
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own task schedules" ON task_schedules
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own task schedules" ON task_schedules
+  FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own task schedules" ON task_schedules
+  FOR DELETE USING (auth.uid() = user_id);
+
+-- TASK SETTINGS RLS POLICIES
+CREATE POLICY "Users can view own task settings" ON task_settings
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own task settings" ON task_settings
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own task settings" ON task_settings
+  FOR UPDATE USING (auth.uid() = user_id);
+
+-- TASK TRACKER INDEXES
+CREATE INDEX idx_task_categories_user ON task_categories(user_id);
+CREATE INDEX idx_tasks_user ON tasks(user_id);
+CREATE INDEX idx_tasks_due_date ON tasks(due_date);
+CREATE INDEX idx_tasks_status ON tasks(status);
+CREATE INDEX idx_task_schedules_user ON task_schedules(user_id);
+CREATE INDEX idx_task_schedules_date ON task_schedules(user_id, scheduled_date);
