@@ -4,7 +4,51 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Badge } from '@/components/ui/Badge';
 import { EXTERNAL_LINKS } from '@/lib/utils';
 
-const freeTools = [
+// Tool entry types for safety
+interface ToolEntry {
+  name: string;
+  description: string;
+  features?: string[];
+  href: string;
+  icon: string;
+  cta: string;
+  external?: boolean;
+}
+
+interface ComingSoonEntry {
+  name: string;
+  description: string;
+  icon: string;
+}
+
+// Safety helper: get features array with fallback
+function getFeatures(tool: ToolEntry): string[] {
+  if (!tool.features || !Array.isArray(tool.features)) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn(`Tool "${tool.name}" is missing features array`);
+    }
+    return [];
+  }
+  return tool.features;
+}
+
+// Safety helper: validate tool entry in development
+function validateTool(tool: ToolEntry, index: number, arrayName: string): boolean {
+  if (process.env.NODE_ENV === 'development') {
+    const missing: string[] = [];
+    if (!tool.name) missing.push('name');
+    if (!tool.href) missing.push('href');
+    if (!tool.icon) missing.push('icon');
+    if (!tool.cta) missing.push('cta');
+    if (missing.length > 0) {
+      console.warn(`${arrayName}[${index}] is missing: ${missing.join(', ')}`);
+      return false;
+    }
+  }
+  return !!(tool.name && tool.href);
+}
+
+const freeTools: ToolEntry[] = [
   {
     name: 'EAwiz GPT',
     description:
@@ -71,7 +115,7 @@ const freeTools = [
   },
 ];
 
-const memberTools = [
+const memberTools: ToolEntry[] = [
   {
     name: 'Charitable Deductions Calculator 2025',
     description:
@@ -269,7 +313,7 @@ const memberTools = [
   },
 ];
 
-const comingSoon = [
+const comingSoon: ComingSoonEntry[] = [
   {
     name: 'Meeting Prep Generator',
     description: 'Generate comprehensive meeting prep documents in seconds.',
@@ -323,7 +367,9 @@ export default function ToolsPage() {
             </p>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {freeTools.map((tool) => (
+            {freeTools.filter((tool, i) => validateTool(tool, i, 'freeTools')).map((tool) => {
+              const features = getFeatures(tool);
+              return (
               <Card
                 key={tool.name}
                 variant="bordered"
@@ -343,7 +389,7 @@ export default function ToolsPage() {
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-2">
-                    {tool.features.map((feature, i) => (
+                    {features.length > 0 ? features.map((feature, i) => (
                       <li key={i} className="flex items-center gap-2 text-gray-600">
                         <svg
                           className="w-4 h-4 text-green-500 flex-shrink-0"
@@ -358,7 +404,9 @@ export default function ToolsPage() {
                         </svg>
                         {feature}
                       </li>
-                    ))}
+                    )) : (
+                      <li className="text-gray-500 italic">Details coming soon</li>
+                    )}
                   </ul>
                   <div className="mt-6">
                     {tool.external ? (
@@ -382,7 +430,8 @@ export default function ToolsPage() {
                   </div>
                 </CardContent>
               </Card>
-            ))}
+            );
+            })}
           </div>
         </div>
       </section>
@@ -393,11 +442,13 @@ export default function ToolsPage() {
           <div className="text-center mb-12">
             <h2 className="section-title">Members Only Tools</h2>
             <p className="section-subtitle">
-              Unlock all tools with an EAwiz membership — $25/month or $250/year.
+              Unlock all tools with an EAwiz membership - $25/month or $250/year.
             </p>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {memberTools.map((tool) => (
+            {memberTools.filter((tool, i) => validateTool(tool, i, 'memberTools')).map((tool) => {
+              const features = getFeatures(tool);
+              return (
               <Card
                 key={tool.name}
                 variant="bordered"
@@ -417,7 +468,7 @@ export default function ToolsPage() {
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-2">
-                    {tool.features.map((feature, i) => (
+                    {features.length > 0 ? features.map((feature, i) => (
                       <li key={i} className="flex items-center gap-2 text-gray-600">
                         <svg
                           className="w-4 h-4 text-green-500 flex-shrink-0"
@@ -432,7 +483,9 @@ export default function ToolsPage() {
                         </svg>
                         {feature}
                       </li>
-                    ))}
+                    )) : (
+                      <li className="text-gray-500 italic">Details coming soon</li>
+                    )}
                   </ul>
                   <div className="mt-6">
                     <Link href={tool.href}>
@@ -443,12 +496,13 @@ export default function ToolsPage() {
                   </div>
                 </CardContent>
               </Card>
-            ))}
+            );
+            })}
           </div>
           <div className="mt-12 text-center">
             <Link href="/join">
               <Button variant="primary" size="lg">
-                Become a Member — $25/month
+                Become a Member - $25/month
               </Button>
             </Link>
           </div>
